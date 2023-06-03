@@ -1,0 +1,50 @@
+{
+	"type": "en",
+	"translations": {
+		"potions_book.name": "Potions",
+		"potions_book.telegram": "Telegram developer channel",
+		"potions_book.vk": "VK Developer Group",
+		
+		"potions_book.content": "Content",
+		"potions_book.page1": "1. Types of ingredients",
+		"potions_book.page2": "2. Brains and gunpowder",
+		"potions_book.page3": "3. Paw and sugar",
+		"potions_book.page4": "4. Fire powder and eye",
+		"potions_book.page5": "5. Improvements",
+		"potions_book.page6": "6. Protection from magic",
+		"potions_book.page7": "7. Dragon Bone and Dust",
+		"potions_book.page8": "8. Flower dust and crystal",
+		"potions_book.page9": "9. Flower and dust",
+		"potions_book.page10": "10. Spider paws",
+		
+		"potions_book.types": "Types of ingredients",
+		"potions_book.type_descriptions": "",
+		"potions_book.glasses": "Event - This potion ingredient determines for which cavo the potion will be used. This ingredient can only be put first!\nSide ingredient - gives various effects. Can be put into a potion only after an event-type ingredient or separator.\nImprovement - increases the level of effect and time of all the usual ingredients that were put before it. It can be put only after events, ordinary ingredients, separations, mystical dust.",
+		
+		"potions_book.brain": "Brains are the main ingredient of the potion, it is the ingredient of the event, when adding this ingredient, we indicate that the potion will act on the one who uses it.",
+		"potions_book.gunpowder": "Gunpowder is an ingredient of the event, when executed, the potion will work on mobs within a radius of 3 blocks.",
+		
+		"potions_book.rabbit_foot": "This is a common ingredient, this ingredient gives a bouncing effect of level 1, for 8 seconds.",
+		"potions_book.sugar": "This is a common ingredient, this ingredient gives a level 1 speed effect, for 8 seconds.",
+		
+		"potions_book.blaze_powder": "This is a common ingredient, this ingredient gives a power effect of level 1, for 8 seconds.",
+		"potions_book.spider_eye": "This is a common ingredient, this ingredient gives the effect of poisoning level 1, for 8 seconds.",
+		
+		"potions_book.redstone": "This is an improvement ingredient, gives +8 seconds of action, -1 level of effect.",
+		"potions_book.glowstone_dust": "This is an improvement ingredient, gives -4 seconds of action, +2 level of effect.",
+		
+		"potions_book.dead_essence": "This is a common ingredient, gives protection from a deadly type of attack, for 25 seconds of level 5.",
+		"potions_book.crystal_powder": "This is a common ingredient, gives protection from a magical type of attack, for 25 seconds of level 5.",
+		
+		"potions_book.witherbone": "This is a common ingredient that gives immunity from magic deprivation for 7.5 seconds.",
+		"potions_book.aw_dragon_powder": "This is an improvement ingredient, gives +50 seconds of action, +3 level of effect.",
+		
+		"potions_book.aw_petal_powder": "This is an improvement ingredient, gives +20 seconds of action.",
+		"potions_book.magic_crystal": "This is a common ingredient, this ingredient gives regeneration of level 3 aspects, for 20 seconds.",
+		
+		"potions_book.enchantment_forest_flower": "This is a common ingredient, this ingredient gives the effect of ignorance level 2, for 40 seconds.",
+		"potions_book.aw_mysterious_powder": "Mystical dust will allow you to put another ingredient after it.",
+		
+		"potions_book.spider_legs": "This is just a connecting ingredient, this ingredient can be put after the usual ingredients, improvements, after this ingredient you can put all these ingredients."
+	}
+}

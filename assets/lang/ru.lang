@@ -1,0 +1,430 @@
+{
+	"type": "ru",
+	"translations": {
+		"aw.item.aw_potions_book": "Книга зельеварения",
+		"aw.item.aw_backpack": "Сумка магов",
+		"aw.item.regularbag": "Обычный мешок",
+		"aw.item.piece_magic": "Кусок знания: магии",
+		"aw.item.piece_protection": "Кусок знания: защиты",
+		"aw.item.piece_necromancy": "Кусок знания: некромантии",
+		"aw.item.lore_class_mage": "Знания класса: маг",
+		"aw.item.lore_class_warrior": "Знания класса: воин",
+		"aw.item.lore_class_necromancer": "Знания класса: некромант",
+		"aw.item.aw_magic_ingot": "Магическое железо",
+		"aw.item.mysterious_powder": "Таинственный порошок",
+		"aw.item.brain": "Мозги",
+		"aw.item.spider_legs": "Паучьи лапки",
+		"aw.item.rune_fire": "Руна огня",
+		"aw.item.rune_earth": "Руна земли",
+		"aw.item.rune_wind": "Руна ветра",
+		"aw.item.rune_light": "Руна света",
+		"aw.item.rune_darkness": "Руна тьмы",
+		"aw.item.rune_copying": "Руна клонирования",
+		"aw.item.rune_absorption": "Руна проникновения",
+		"aw.item.rune_greed": "Руна алчность",
+		"aw.item.rune_life": "Руна жизни",
+		"aw.item.rune_dead": "Руна смерти",
+		"aw.item.glasses": "Очки предсказания",
+		
+		"aw.item.magic_stick": "Магичиская палка",
+		"aw.item.magic_stick_2_lvl": "Усилинная магическая палочка",
+		"aw.item.aw_magic_stick": "Магическая палка подземелья",
+		"aw.item.magic_sword": "Магический меч",
+		"aw.item.magic_sword_2_lvl": "Усилинный магический меч",
+		"aw.item.magic_shovel": "Магическая боевая лопата подземелья",
+		"aw.item.magic_staff": "Магический посох",
+		"aw.item.magic_staff_2_lvl": "Усиленный магический посох",
+		"aw.item.magic_staff": "Магический посох подземелья",
+		"aw.item.acolyte_staff": "Посох послушника",
+		
+		"aw.item.magic_crystal": "Магический кристалл",
+		"aw.item.magic_plate": "Магическая плита",
+		"aw.item.staff_singularity": "Посох сингулярности",
+		"aw.item.sroll1": "Свиток: использование на блоке",
+		"aw.item.sroll2": "Свиток: использование игроком",
+		"aw.item.sroll3": "Свиток: использование на мобе",
+		"aw.item.sroll4": "Свиток: урон 1 уровня",
+		"aw.item.sroll5": "Свиток: скорость",
+		"aw.item.sroll6": "Свиток: лечение 1 уровня",
+		"aw.item.sroll7": "Свиток: сила",
+		"aw.item.sroll8": "Свиток: убийства",
+		"aw.item.sroll9": "Свиток: разрушения блока",
+		"aw.item.sroll10": "Свиток: урон 2 уровня",
+		"aw.item.sroll11": "Свиток: урон 3 уровня",
+		"aw.item.sroll12": "Свиток: лечение 2 уровня",
+		"aw.item.sroll13": "Свиток: лечения уровня 3",
+		"aw.item.sroll14": "",
+		"aw.item.sroll15": "Свиток: телепортации",
+		"aw.item.sroll16": "Свиток: бури",
+		"aw.item.sroll17": "Свиток: сильной атаки",
+		"aw.item.sroll18": "Свиток: слабая атака",
+		"aw.item.sroll19": "Свиток: регенерации",
+		"aw.item.sroll20": "Свиток: магнит",
+		"aw.item.sroll21": "Свиток: призыва",
+		"aw.item.sroll22": "Свиток: луч смерти",
+		"aw.item.sroll23": "Свиток: дождь мёртвых",
+		"aw.item.sroll24": "",
+		"aw.item.sroll25": "",
+		"aw.item.sroll26": "Свиток: взрывной удар",
+		"aw.item.sroll27": "Свиток: задержки на 0.5 секунды",
+		"aw.item.sroll28": "Свиток: задержки на 1 секунды",
+		"aw.item.sroll29": "Свиток: очищения",
+		"aw.item.sroll30": "",
+		"aw.item.sroll31": "",
+		"aw.item.sroll32": "Свиток: огненный снаряд",
+		"aw.item.sroll33": "Свиток: огненный шторм",
+		"aw.item.sroll34": "Свиток: огненный поток",
+		"aw.item.sroll35": "Свиток: звездапад",
+		"aw.item.sroll36": "Свиток: перемещение по y",
+		"aw.item.sroll37": "Свиток: перемещение по x",
+		"aw.item.sroll38": "Свиток: перемещение по z",
+		"aw.item.sroll39": "Свиток: перенос блока по y",
+		"aw.item.sroll40": "Свиток: перенос блока по x",
+		"aw.item.sroll41": "Свиток: перенос блока по z",
+		"aw.item.sroll42": "Свиток: туман",
+		"aw.item.sroll43": "Свиток: иллюзия",
+		"aw.item.sroll44": "Свиток: разрушение иллюзии",
+		"aw.item.sroll45": "Свиток: заморозка",
+		"aw.item.sroll46": "Свиток: снежная буря",
+		"aw.item.sroll47": "Свиток: Сигнальный огонь",
+		"aw.item.madin_tashu": "С днём рождения Мадин ташу",
+		"aw.sroll.mode": "режим: {mode}",
+		"aw.item.spell_set": "Набор заклинаний: ",
+		"aw.item.decor1": "Свиток декорации: буря",
+		"aw.item.decor2": "Свиток декорации: поле",
+		"aw.item.decor3": "Свиток декорации: рой",
+		"aw.item.decor4": "Свиток декорации: спираль",
+		"aw.item.decor5": "Свиток декорации: удар",
+		"aw.item.decor6": "Свиток декорации: поднять руки",
+		"aw.item.decor7": "Свиток декорации: ударная волна",
+		"aw.item.decor8": "Свиток декорации: свечение блока",
+		"aw.item.decor9": "Свиток декорации: указатель",
+		"aw.item.decor10": "Свиток декорации: направленный удар",
+		"aw.item.bottle_empty": "Пустой флакон",
+		"aw.item.bottle_potion": "Флакон с зельем",
+		"aw.item.pelmeni": "Кастрюля пельменей",
+		"aw.item.tanatos_stone": "Воскрешающий камень",
+		"aw.item.amylet": "Таинственный амулет",
+		"aw.item.belt": "Таинственный пояс",
+		"aw.item.death": "Коса смерти",
+		"aw.item.piece_knowledge": "Кусок знания: ",
+		"aw.item.book": "Книга класса",
+		"aw.item.potion": "Зелье",
+		
+		"aw.item.name_spell_set.displacement": "перемещения",
+		"aw.item.name_spell_set.swipe": "сильный удар",
+		"aw.item.scrutiny_book": "Книга квестов",
+		"aw.item.RobeOfTheAzureWizard": "Роба мага",
+		"aw.item.fire_king": "Огненная корона",
+		"aw.item.fire_chestplate": "Огненный нагрудник",
+		"aw.item.fire_leggings": "Огненные поножи",
+		"aw.item.fire_boots": "Огненные ботинки",
+		"aw.item.bandit_helmet": "Шлем Бандита",
+		"aw.item.bandit_chestplate": "Нагрудник Бандита",
+		"aw.item.bandit_leggings": "Поножи Бандита",
+		"aw.item.bandit_boots": "Ботинки Бандита",
+		"aw.item.necromancer_helmet": "Копюшон некроманта",
+		"aw.item.necromancer_chestplate": "Мантия некроманта",
+		"aw.item.bandit_leggings": "Поножи некроманта",
+		"aw.item.bandit_boots": "Ботинки некроманта",
+		"aw.item.crystal_powder": "Кристалличиский порошок",
+		"aw.item.dead_essence": "Эссенция смерти",
+		"aw.item.witherbone": "Кость визер скелета",
+		"aw.item.dragon_powder": "Драконья пыль",
+		"aw.item.enchantment_forest_flower": "Зачарованный цветок",
+		"aw.item.petal_powder": "Зачарованная пыль",
+		
+		
+		"aw.enchant.magic_protection": "Защита от магии",
+		"aw.enchant.dead_protection": "Защита от смерти",
+   "aw.enchant.aspects_restoration": "Регенерация аспектов",
+   "aw.enchant.magic_damage": "Магический урон",
+		
+		
+		"aw.block.research_table": "Стол исследования",
+		"aw.block.rityal_pedestal": "Ритуальный пьедестал",
+		"aw.block.magic_connector": "Магический реконструктор",
+		"aw.block.bowl": "Чаша желаний",
+		"aw.block.cauldron": "Котёл",
+		"aw.block.magic_controller": "Магический контроллер",
+		"aw.block.singularity_shrinker": "Сжиматель сингулярности",
+		"aw.block.singularity_extractor": "Извлекатель сингулярности",
+		"aw.block.transmitter": "Передатчик аспектов",
+		"aw.block.ancient_bottom_obelisk": "Древний обелиск",
+		"aw.block.magic_smithy": "Магическая кузня",
+		"aw.block.enchanted_stone": "Зачарованный камень",
+		"aw.block.magic_crusher": "Магический дробитель",
+		"aw.block.aw_magic_storage": "Магическое хранилище",
+		"aw.block.clone_scroll": "Стол клонирования свитков",
+		"aw.block.aw_generator_aspect": "Генератор аспектов",
+		"aw.block.generator_EU": "Генератор EU",
+		
+		
+		"aw.creative_group.rune": "руны",
+		"aw.creative_group.wand": "Палочки",
+		"aw.creative_group.events": "события",
+		"aw.creative_group.sroll": "свитки",
+		"aw.creative_group.decor": "декоративные свитки",
+		"aw.creative_group.scrutiny": "изучения",
+		"aw.creative_group.armor": "Броня",
+		
+		"aw.clone_scroll.not_aspect": "Отсутствуют аспекты",
+		"aw.clone_scroll.not_item": "Отсутствуют предметы",
+		
+		
+		
+		"aw.guide.tab.singularity": "Магическая индустрия",
+		"aw.guide.freezing.title": "Заморозка",
+		"aw.guide.freezing.info": "Выпускает замораживающий снаряд, который наносит 3 ед урона. На 3 секунды блокирует использование магии для сущности.",
+		
+		"aw.guide.snowstorm.title": "Снежная буря",
+		"aw.guide.snowstorm.info": "Выпускает кучу снарядов, которые наносят 3 ед урона. И на 3 секунды блокирует использование магии для сущностей.",
+		
+		"aw.guide.magic_storage.title": "Магическое хранилище",
+		"aw.guide.magic_storage.info": "Магическое хранилище может хранить 10000 аспектов",
+		
+		"aw.guide.magic_crusher.title": "Магический дробитель",
+		"aw.guide.magic_crusher.info": "Магический дробитель, его результат может удваиватся, утраиватся и.т.д если под блокам поставить руны клонирования",
+		
+		"aw.guide.illusion.title": "Иллюзии",
+		"aw.guide.illusion.text1": "С помощью свитка илюзии вы можете создать иллюзию блока, он будет выглядеть почти как настоящий но не осизаемый.",
+		
+		
+		
+		"aw.glasses.info": "Очки предсказания, предназначены для зельеварения, показывают можешь ли ты положить этот предмет в котёл.",
+		"aw.guide.fog.title": "Свиток туман",
+		"aw.guide.fog.info": "Создаёт туман, в радиусе 15 блоков. Может быть полезен против игроков.",
+		"aw.message.entrance": "§2Спасибо что скачали мод Ancient wonders! \n§3В группе ВКонтакте вы сможете следить за развитием мода - https://vk.com/club186544580",
+		"aw.message.required_parameter": "Требуется {name} {level}",
+		"aw.message.required_level": "Требуется {name} уровня {level}",
+		"aw.message.give_study": "Необходимо изучение {scrutiny}",
+		"aw.message.parameter_update": "§2Параметр: {name} был улучшен на {value}, теперь он уровня {new}",
+		"aw.message.cannot_class": "§4Вы не можете поменять класс",
+		"aw.message.parameter_noy_update": "§4Параметр: {name} максимального уровня",
+		"aw.message.have_class": "§4У вас нет класса",
+		"aw.message.wand": "Требуется {name} {value} для заклинания {scroll}",
+		"aw.message.wand.not_compatible_with": "{event} не совместим с {scroll}",
+		"aw.message.use_empty": "Вы не можете использовать пустое заклинание",
+		"aw.message.need_study": "Необходимо изучение {name}",
+		"aw.tip_message.staff_singularity": "Блок выбран",
+		"aw.tip_message.binding_staff_singularity": "§2Блок привязан",
+		"aw.tip_message.binding_staff_singularity_error": "§4Слишком большое расстояние, для этого блока максимум {value}",
+		"aw.message.ritualAspect500": "Для этого ритуала нужно минимум 500 аспектов",
+		"aw.message.ritualMagic30": "Для этого ритуала нужно минимум магия 30 уровня",
+		"aw.message.selected_class": "§2Вы выбрали класс: {name}",
+		"aw.message.scrutiny_all": "Вы изучили всё",
+		"aw.message.scrutiny": "Вы изучили: {name}",
+		"aw.message.scrutiny_give_noy": "Вы не можете изучить: {name}",
+		"aw.message.sroll.kill": "для убийства данного моба нужно {aspects} аспектов",
+		
+		"aw.block.aw_magic_stone": "Магический камень",
+		"aw.block.aw_magic_brick": "Магический кирпич",
+		"aw.message.player_dead_1": "Игрок {name} заколдован насмерть",
+		"aw.message.player_dead_2": "Игрок {name} убит запретным заклинанием",
+		
+		
+		"aw.guide.armor.description": "Описание брони",
+		"aw.guide.armor.value": "защита {value}",
+		"aw.guide.armor.value.protection": "Защищает от атаки {name} на {value}",
+		"aw.guide.armor.damage": "Прочность {value}",
+		
+		"aw.guide.tanatos.title": "Воскрешающий камень",
+		"aw.guide.tanatos.text": "Воскрешающий камень призывает босса Танатос, очень опасный противник, наносит в основном урон dead, при половине здоровья становится не уязвим к любым не магическим атакам.",
+		
+		"aw.guide.dead.title": "Коса",
+		"aw.guide.dead.text": "Коса - данной косой пользовался сам Танатос, данную косу можноиспользовать как волшебную палочку, при этом коса наносит 20 ед урона при атаке.",
+		
+		"aw.guide.tab.riches": "Сокровища",
+		"aw.gui.cauldron_title": "Котёл",
+		"aw.gui.cauldron_text": "Котёл - требуется для приготовления зелий, можно скрафтить с помощью ритуалов. Зелья имёт строгую последовательность. Зелья имеют строгую структуру, в случае её не соблюдения вода в котле становится чёрная. Структура Зелья: эвент, ингредиент. эвенты: Мозги(использует на игроке зелье), гнелая плоть(используют зелье на ближайших мобов), ингредиенты: кроличья лапка, сахар, огненный порошок, глаз паука. улучшения, их можно ложить место ингредиента, или после, светопыль(+2 к уровню эффекта, -80 к времени эффекта), редстоун пыль(-1 к уровню эффекта, +160 к времени эффекта), паучьи лапки разделяют ингредиенты(можно положить несколько ингредиентов), таинственный порошок разделяет эффекты.\n P.SНужно разжечь костёр под котлом.",
+		"aw.gui.cauldron_text2": "Пример:\n мозги, кроличья лапка, светопыль, паучьи лапки, редстоун\n мозги, кроличья лапка, паучьи лапки, сахар, редстоун, паучьи лапки, светопыль",
+		"aw.gui.ritual_title": "Ритуалы",
+		"aw.gui.ritual_text": "Ритуалы основная механика aw, каждый ритуал может потребовать определённую прокачку и количество аспектов, как строится какой либо ритуал можно узнать в официальном гайде aw(ссылку можно найти в группе вк), также можно узнать с помощью мода Schematic",
+		"aw.gui.ritual_text2": "Ритуалы: ритуал 1 уровня, ритуал 2 уровня, ритуал 3 уровня, клонирования, призыва.",
+		"aw.gui.book_title": "Характеристики вашего персонажа",
+		"aw.gui.book_class": "Ваш класс",
+		"magic": "Магия",
+		"protection": "Защита",
+		"necromancer": "Некромантия",
+		"aspects": "Аспекты",
+		"aw.gui.book_class_noy": "Что-бы посмотреть характеристики нужен выбрать класс",
+		"aw.gui.rv.ritual_1lvl": "Ритуал 1 уровня",
+		"aw.gui.rv.ritual_2lvl": "Ритуал 2 уровня",
+		"aw.gui.rv.ritual_3lvl": "Ритуал 3 уровня",
+		"aw.gui.rv.bagdrop": "Дроп с мешочка: ",
+		"aw.gui.rv.generatorItem": "Генерация предметов",
+		"aw.gui.rv.aw_boss_drop": "Дроп босса",
+	
+	
+		"aw.guide.text.characteristics": "Характеристики",
+		"aw.guide.tab.basics": "Основы магии",
+		"aw.guide.srollEvent.title": "Ивенты",
+		"aw.guide.srollEvent.text": "Ивенты - это особый тип свитков, которые можно найти в структурах. Они определяют на что или кого будет действовать заклинание палочки.",
+		
+		
+		"aw.guide.book.title": "Книга класса",
+		"aw.guide.book.text1": "Это базовый предмет, открыв книгу вы можете увидеть характеристики вашего персонажа, а нажав кникой на шифте вы можете увидеть ваше количество аспектов. Тагже книга может понадобиться для взаимодействия с некоторыми блоками или активации ритуалов",
+		"aw.guide.book.text2": "Прокачка характеристик персонажа происходит, за счёт:",
+		
+		
+		"aw.guide.srollMagicConnector.title": "Магический реконструктор",
+		"aw.guide.srollMagicConnector.text1": "Магический реконструктор - это один из базовых блоков мода.",
+		"aw.guide.srollMagicConnector.text2": "Для его исполнения на нём должна лежать палочка(можно найти в структурах или скрафтить), положите палочу на него(нажмите палочкой)",
+		"aw.guide.srollMagicConnector.text3": "Для его исполнения на нём должна лежать палочка(можно найти в структурах или скрафтить), положите палочу на него(нажмите палочкой)",
+		"aw.guide.srollMagicConnector.text4": "При нажатии по блоку свитком, то свиток положится в палочку",
+		"aw.guide.srollMagicConnector.text5": "При нажатии книгой класса, можно вынуть свиток",
+		"aw.guide.srollMagicConnector.text6": "При нажатии книгой класса на шифте, можно вынуть все свитки",
+		
+		
+		"aw.guide.srollEventBlock.title": "Ивент использование на блоке",
+		"aw.guide.srollEventBlock.text1": "Ивенты - это особый тип свитков, которые можно найти в структурах. Они определяют на что или кого будет действовать заклинание палочки.",
+		"aw.guide.srollEventBlock.text2": "Данный свиток использует свитки в палочке на блоки(нажмите по блоку), если свитки совместимы с данным ивентом.",
+		
+		
+		"aw.guide.srollEventPlayer.title": "Ивент использование на игроке",
+		"aw.guide.srollEventPlayer.text1": "ИвентДанный свиток использует свитки на игроке или игроком(зажмите палочку), если свитки совместимы с данным ивентом.",
+		
+		
+		"aw.guide.srollEventEntity.title": "Ивент использование на мобе",
+		"aw.guide.srollEventEntity.text1": "Данный свиток использует свитки на мобе или мобом(зажмите палочку на мобе), если свитки совместимы с данным эвентом.",
+		
+		
+		"aw.guide.acolyteStaff.title": "Палочка послушника",
+		"aw.guide.acolyteStaff.text1": "Базовая палочка, палочки имеют свои характеристики, которые влияют на стоимость заклинания в ней.",
+		
+		"aw.guide.magisStick.title": "Магическая палочка",
+		"aw.guide.magisSword.title": "Магический меч",
+		"aw.guide.magisPocox.title": "Магический посох",
+		
+		
+		"aw.guide.dungeon_wands": "Палочки подземелья достаточно редкий, но чрезвычайно полезный предмет. Они не имеют недостатков, быстрый и надёжный.",
+		"aw.guide.clone_scroll": "С помощью этого блока вы сможете клонировать свитки.",
+		
+		
+		"aw.guide.classWarrior.title": "Класс Воин",
+		"aw.guide.classWarrior.text1": "Каждый класс имеет свои максимальные прокачки. Засчёт этого вы можете или не можете использовать что-то.",
+		"aw.guide.classWarrior.text2": "Перед тем как выбрать класс изучите всё по максимуму.",
+		"aw.guide.classWarrior.text3": "Чтобы выбрать класс используйте:",
+		"aw.guide.classWarrior.text4": "Данную бумагу можно скрафтить или найти в структурах.",
+		"aw.guide.classWarrior.text5": "Максимальные характеристики класса ",
+		"aw.guide.classWarrior.text6": "максимальный запас aspects ",
+		
+		"aw.guide.classNecromancer.title": "Класс Некромант",
+		"aw.guide.classMage.title": "Класс Мага",
+		
+		
+		"aw.guide.bowlWishes.title": "Чаша желаний",
+		"aw.guide.bowlWishes.text1": "Чаша желаний способна лишить вас класса. Для этого нужно нажать по чаше рунной тьмы и ждать.",
+		"aw.guide.bowlWishes.text2": "Внимание! после применение чаши вам придётся заново выбрать класс и заново качатся!",
+		
+		
+		"aw.guide.SpellSet.title": "Набор заклинаний",
+		"aw.guide.SpellSet.text1": "Предмет можно положить в палочу тагже как и свиток. При этом будет использоваться заклинание которое находится внутри.",
+		
+		
+		"aw.guide.MagicController.title": "Магический контроллер",
+		"aw.guide.MagicController.text1": "Магический контроллер нужен для 2 вещей 1)смена скина палочки 2)создание набора заклинаний.",
+		"aw.guide.MagicController.text2": "Магический контроллер может временно хранить энергию, данный блок набирает энергию дотехпор пока не заполнится, когда он заполнится он будет выбрасывать энергию.",
+		"aw.guide.MagicController.text3": "Для смены скина палочки необходимо, пложить палочку в слот, затем нажимать по блоку, книгой класса(потребляется 50ед энергит).",
+		"aw.guide.MagicController.text4": "Набор заклинаний создаётся тагже как и в магическом контроллере, но когда ложишь предмет в набор потребляется 50ед энергии, тагже набору можно дать имя, для этого нужно нажать по блоку переменованнай биркой.",
+		
+		
+		
+		"aw.guide.tab.sroll": "Боевые свитки",
+		"aw.guide.srollDamage1.title": "Свиток урона 1 уровня",
+		"aw.guide.srollDamage1.text1": "Наносит 3 единицы урона, можно найти в структурах. Не совместим с эвентом использование на блоки.",
+		
+		
+		"aw.guide.srollDamage2.title": "Свиток урона 2 уровня",
+		"aw.guide.srollDamage2.text1": "Наносит 14 единицы урона, можно найти в структурах. Не совместим с эвентом использование на блоки.",
+		
+		
+		"aw.guide.srollDamage3.title": "Свиток урона 3 уровня",
+		"aw.guide.srollDamage3.text1": "Наносит 58 единицы урона, можно найти в структурах. Не совместим с эвентом использование на блоки.",
+		
+		
+		"aw.guide.srollWeakAttack.title": "Свиток слабой атаки",
+		"aw.guide.srollWeakAttack.text1": "Выпускает луч из моба, который использует заклинание, луч наносиь 4 ед урона.",
+		
+		
+		"aw.guide.srollStrongAttack.title": "Свиток сильной атаки",
+		"aw.guide.srollStrongAttack.text1": "Выпускает лучи в случайные стороны из моба, который использует заклинание, каждый луч наносиь 4 ед урона.",
+		
+		
+		"aw.guide.srollFireProjectile.title": "Свиток огненный снаряд",
+		"aw.guide.srollFireProjectile.text1": "Выпускает огненный снаряд из моба, который использует заклинание, снаряд Наносит 8 ед урона.",
+		
+		
+		"aw.guide.srollFirestorm.title": "Свиток огненный шторм",
+		"aw.guide.srollFirestorm.text1": "Выпускает с неба огненные снаряды, снаряд наносит 8 ед урона.",
+		
+		
+		"aw.guide.srollFlameStream.title": "Свиток огненный поток",
+		"aw.guide.srollFlameStream.text1": "Выпускает кучу снарядов из моба, который использует заклинание, каждый снаряд наносиь 8 ед урона.",
+		
+		
+		"aw.guide.srollstarfall.title": "Свиток звездопад",
+		"aw.guide.srollstarfall.text1": "Выпускает с неба снаряд, который наносит 10 единиц урона в полёте, и 20 когда упал.",
+		
+		
+		"aw.guide.srollExplosive.title": "Свиток взрывной удар",
+		"aw.guide.srollExplosive.text1": "Выпускает снаряд в ту сторону куда смотрит моб, когда встечается с блоком взрывается или когда пролитит макс расстояние.",
+		
+		
+		
+		"aw.guide.tab.srollSubsidiary": "Вспомогательные свитки",
+		"aw.guide.srollHealing1.title": "Свиток лечения 1 уровня",
+		"aw.guide.srollHealing1.text1": "Восстанавливает, мобу который использует заклинание, 5 единиц здоровья.",
+		
+		"aw.guide.srollHealing2.title": "Свиток лечения 2 уровня",
+		"aw.guide.srollHealing2.text1": "Восстанавливает, мобу который использует заклинание, 10 единиц здоровья.",
+		
+		"aw.guide.srollHealing3.title": "Свиток лечения 3 уровня",
+		"aw.guide.srollHealing3.text1": "Восстанавливает, мобу который использует заклинание, 40 единиц здоровья.",
+		
+		"aw.guide.srollSpeed.title": "Свиток скорости",
+		"aw.guide.srollSpeed.text1": "Накладывает эффект скорости на моба который использует заклинание.",
+		
+		"aw.guide.srollStrength.title": "Свиток силы",
+		"aw.guide.srollStrength.text1": "Накладывает эффект силы на моба который использует заклинание.",
+		
+		"aw.guide.srollRegeneration.title": "Свиток регенерации",
+		"aw.guide.srollRegeneration.text1": "Накладывает эффект регенерации на моба который использует заклинание.",
+		
+		"aw.guide.srollMagnet.title": "Свиток магнит",
+		"aw.guide.srollMagnet.text1": "Притягивает всех мобов в округе, к мобу которые использует заклинание",
+		
+		"aw.guide.srollBlockDestroy.title": "Свиток разрушения блока",
+		"aw.guide.srollBlockDestroy.text1": "Ломает блок на которой использует моб.",
+		
+		"aw.guide.srollStorms.title": "Свиток бури",
+		"aw.guide.srollStorms.text1": "подкидывает моба вверх.",
+		
+		"aw.guide.srollTeleportations.title": "Свиток телепортации",
+		"aw.guide.srollTeleportations.text1": "Ускоряет игрока, туда куда он смотрит.",
+		
+		"aw.guide.srollCleansing.title": "Свиток очищения",
+		"aw.guide.srollCleansing.text1": "Убирает все эффекты",
+		
+		
+		
+		"aw.guide.tab.srollKill": "Запретные свитки",
+		"aw.guide.srollKill.title": "Свиток убийства",
+		"aw.guide.srollKill.text1": "Убивает моба, можно найти в структурах. Не совместим с эвентом использование на блоки.",
+		"aw.guide.srollKill.text2": "aspects (жизни моба * 3)",
+		
+		
+		"aw.guide.srollSummoning.title": "Свиток призыва",
+		"aw.guide.srollSummoning.text1": "Призывает мобов которые всех отакуют, кроме того кто их призвал.",
+		
+		"aw.guide.srollDeathRay.title": "Свиток луч смерти",
+		"aw.guide.srollDeathRay.text1": "Выпускает луч, который Убивает моба.",
+		
+		"aw.guide.srollRainOfTheDead.title": "Свиток дождь мёртвых",
+		"aw.guide.srollRainOfTheDead.text1": "Выпускает лучи с неба, которые Убивает мобов.",
+		
+		"aw.guide.singularity.title": "Сингулярность",
+		"aw.guide.singularity.text1": "Сингулярность - одна из базовых вещей мода. сингулярность используется для создание аспектов. Для создание сингулярности нужен блок Сжиматель сингулярности, дальше в него необходимо положить руны, каждая руна доёт + 10 к заряду сингулярности(с каждой 250 зарядом повышается вырабатываемость сингулярности). Для извлечение аспектов из сингулярности нужен, извлекатель сингулярности, при подачи редстоуна он вкл/выкл способность давать игрокам аспекты.",
+		"aw.guide.singularity.text2": "Извлекатель может передавать аспекты в блоки которые потребляют аспекты(но в радиусе 5 блоков). Тагже с помощью передатчика аспектов можно перемещать аспекты на более большие расстояни(радиус деяствия 3 блока)"
+	}
+}

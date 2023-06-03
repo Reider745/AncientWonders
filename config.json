@@ -1,0 +1,33 @@
+{
+  "enabled":true,
+  "beta_mode":false,
+  "tickUpdate":5,
+  "structure":{
+    "DISTANCE":100,
+    "House_of_magicians":900,
+    "Temple":800,
+    "Ordinary_temple":850,
+    "Tower_of_darkness":1000,
+    "Tower_of_evil":800,
+    "fortress":900,
+    "Temple_of_magicians":950,
+    "magic_temple":850,
+    "Cursed_Tower":1450,
+    "Location_0":2000
+  },
+  "scrutiny_gui":{
+    "frame":"aw_frame_scrutiny",
+    "frame_scale":3,
+    "scrutiny":"classic_frame_bg_light_border",
+    "scrutiny_2":"workbench_frame3"
+  },
+  "sound":{
+    "enabled":true,
+    "volume":0.3
+  },
+  "debug":{
+    "enabled":true,
+    "saveScrutiny":true,
+    "command":true
+  }
+}

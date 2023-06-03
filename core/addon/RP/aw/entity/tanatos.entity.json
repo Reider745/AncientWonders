@@ -1,0 +1,27 @@
+{
+	"format_version": "1.8.0",
+	"minecraft:client_entity": {
+		"description": {
+			"identifier": "aw:tanatos",
+			"materials": {
+				"default": "tanatos"
+			},
+			"textures": {
+				"default": "textures/entity/tanatos"
+			},
+			"animations": {
+        "look_at_target_default": "animation.unknown.new"
+      },
+    "animation_controllers": [
+       {
+					"look_at_target": "animation.unknown.new"
+				}
+      ],
+      "render_controllers": [ "controller.render.skeleton" ],
+			"geometry": {
+				"default": "geometry.tanatos.aw"
+			},
+			"enable_attachables": true
+		}
+	}
+}

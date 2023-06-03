@@ -1,0 +1,11 @@
+{
+    "shared": {
+        "name": "aw_lib",
+		"include": []
+    },
+
+    "depends": [
+    	"innercore",
+    	"nativejs"
+	]
+}

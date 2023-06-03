@@ -1,0 +1,35 @@
+{
+	"format_version": 1,
+	"header": {
+		"name": "Ancient wonders",
+		"description": "установите этот АДДОН!",
+		"uuid": "fcf43b6f-45f8-4070-8c12-affed233714e",
+		"version": [
+			0,
+			0,
+			1
+		]
+	},
+	"modules": [
+		{
+			"description": "Ancient wonders",
+			"type": "data",
+			"uuid": "c416c7a5-123e-47ab-a366-9842eb48fbd7",
+			"version": [
+				0,
+				0,
+				1
+			]
+		}
+	],
+	"dependencies": [
+		{
+			"uuid": "504dee9b-91e5-426d-802d-e51db9201898",
+			"version": [
+				0,
+				0,
+				1
+			]
+		}
+	]
+}

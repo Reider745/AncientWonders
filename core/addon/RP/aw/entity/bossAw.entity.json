@@ -1,0 +1,29 @@
+{
+	"format_version": "1.8.0",
+	"minecraft:client_entity": {
+		"description": {
+			"identifier": "aw:boss0",
+			"materials": {
+				"default": "boss0"
+			},
+			"textures": {
+				"default": "textures/entity/bossAw"
+			},
+			"animations": {
+      "look_at_target_default": "animation.unknown.new"
+    },
+    "animation_controllers": [
+				{
+					"look_at_target": "animation.unknown.new"
+				}
+			],
+			"geometry": {
+				"default": "geometry.bossAw"
+			},
+			"render_controllers": [
+				"controller.render.default"
+			],
+			"enable_attachables": true
+		}
+	}
+}

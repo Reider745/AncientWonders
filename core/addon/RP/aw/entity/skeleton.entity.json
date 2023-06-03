@@ -1,0 +1,27 @@
+{
+	"format_version": "1.8.0",
+	"minecraft:client_entity": {
+		"description": {
+			"identifier": "aw:skeleton",
+			"materials": {
+				"default": "skeleton"
+			},
+			"textures": {
+				"default": "textures/entity/skeleton"
+			},
+			"animations": {
+        "use_item_progress": "animation.humanoid.use_item_progress",
+        "skeleton_attack": "animation.skeleton.attack"
+      },
+    "animation_controllers": [
+        { "use_item_progress": "controller.animation.humanoid.use_item_progress" },
+        { "skeleton_attack": "controller.animation.skeleton.attack" }
+      ],
+      "render_controllers": [ "controller.render.skeleton" ],
+			"geometry": {
+				"default": "geometry.skeleton.aw"
+			},
+			"enable_attachables": true
+		}
+	}
+}

@@ -1,0 +1,12 @@
+#имя мобов
+entity.aw:boss0.name=Чёкнутый маг
+entity.aw:tanatos.name=Бог смерти
+entity.aw:tanatos.name=Бог смерти
+entity.aw:skeleton.name=Призванный
+entity.aw:stone_golem.name=Заколдованный голем
+item.spawn_egg.entity.aw:stone_golem.name=призвать Заколдованного голема
+aw.tips.game.1=Изучения? Ходите и собирайте их по миру!
+aw.tips.game.2=Не можете одеть броню, прокачайте protection.
+
+
+

@@ -1,0 +1,37 @@
+{
+
+  "format_version": "1.8.0",
+
+  "animations": {
+
+     "animation.aw.decor.one": {
+
+      "loop": true,
+
+      "bones": {
+
+        "head": {
+
+					"rotation": ["-12.5", 0, 0]
+
+				 },
+
+				 "leftArm": {
+          "rotation":[0, 0, "-120"]
+
+				 },
+
+				 "rightArm": {
+
+				  "rotation": [0, 0, "120"]
+
+				 }
+
+      }
+
+    }
+
+  }
+
+}
+

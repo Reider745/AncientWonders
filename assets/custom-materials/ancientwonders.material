@@ -1,0 +1,31 @@
+{
+    "crucible_block_aw:entity_alphatest_custom": {
+        "+states": [
+            "Blending",
+            "DisableCulling",
+            "DisableDepthWrite"
+        ],
+        "-defines": ["ALPHA_TEST"],
+        "+samplerStates": [
+            {
+                "samplerIndex": 0,
+                "textureFilter": "Bilinear"
+            }
+        ]
+    },
+    "potion_aw:entity_alphatest_custom": {
+        "fragmentShader": "./potion_item.fragment",
+        "+states": [
+            "Blending",
+            "DisableCulling",
+            "DisableDepthWrite"
+        ],
+        "-defines": ["ALPHA_TEST"],
+        "+samplerStates": [
+            {
+                "samplerIndex": 0,
+                "textureFilter": "Bilinear"
+            }
+        ]
+    }
+}

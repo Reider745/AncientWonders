@@ -1,0 +1,43 @@
+{
+   "properties": {
+        "beta_mode": {
+            "displayIf": "enabled"
+        },
+        "structure": {
+            "displayIf": "enabled"
+        },
+        "particles": {
+            "displayIf": "enabled"
+        },
+        "debug": {
+            "displayIf": "enabled"
+        },
+        "particles.chance": {
+            "displayIf": "particles.enabled",
+            "type": "SeekBar",
+            "max":100,
+            "min": 1
+        },
+        "debug.API_ItemGenerate": {
+            "displayIf": "debug.enabled"
+        },
+        "debug.API_Wands": {
+            "displayIf": "debug.enabled"
+        },
+        "debug.API_MagicCore": {
+            "displayIf": "debug.enabled"
+        },
+        "debug.API_Ritual": {
+            "displayIf": "debug.enabled"
+        },
+        "debug.API_delItem": {
+            "displayIf": "debug.enabled"
+        },
+        "debug.API_Render": {
+            "displayIf": "debug.enabled"
+        },
+        "debug.API_Mp": {
+            "displayIf": "debug.enabled"
+        }
+    }
+ }

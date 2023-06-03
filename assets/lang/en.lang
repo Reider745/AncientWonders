@@ -1,0 +1,422 @@
+{
+	"type": "en",
+	"translations": {
+		"aw.item.aw_potions_book": "The potions book",
+		"aw.item.aw_backpack": "Bag of Magicians",
+		"aw.item.regularbag": "An ordinary bag",
+		"aw.item.piece_magic": "Piece of knowledge: magic",
+		"aw.item.piece_protection": "Piece of knowledge: protection",
+		"aw.item.piece_necromancy": "Piece of knowledge: Necromancy",
+		"aw.item.lore_class_mage": "Class knowledge: magician",
+		"aw.item.lore_class_warrior": "Class knowledge: Warrior",
+		"aw.item.lore_class_necromancer": "Class knowledge: necromancer",
+		"aw.item.aw_magic_ingot": "Magic Iron",
+		"aw.item.mysterious_powder": "Mysterious Powder",
+		"aw.item.brain": "Brains",
+		"aw.item.spider_legs": "Spider legs",
+		"aw.item.rune_fire": "Rune of Fire",
+		"aw.item.rune_earth": "Rune of the earth",
+		"aw.item.rune_wind": "Wind Rune",
+		"aw.item.rune_light": "Rune light",
+		"aw.item.rune_darkness": "Rune of Darkness",
+		"aw.item.rune_copying": "Cloning Rune",
+		"aw.item.rune_absorption": "Rune of penetration",
+		"aw.item.rune_greed": "Rune greed",
+		"aw.item.rune_life": "Rune life",
+		"aw.item.rune_dead": "Rune dead",
+		"aw.item.glasses": "Prediction Points",
+		"aw.item.magic_stick": "Magic Stick",
+		"aw.item.magic_stick_2_lvl": "Enhanced magic wand",
+		"aw.item.aw_magic_stick": "The magic stick of the dungeon",
+		"aw.item.magic_sword": "Magic Sword",
+		"aw.item.magic_sword_2_lvl": "Enhanced magic sword",
+		"aw.item.magic_shovel": "Magic battle shovel dungeon",
+		"aw.item.magic_staff": "Magic staff",
+		"aw.item.magic_staff_2_lvl": "Enhanced magic staff",
+		"aw.item.magic_staff": "Dungeon magic staff",
+		"aw.item.acolyte_staff": "Novice's Staff",
+		"aw.item.magic_crystal": "Magic Crystal",
+		"aw.item.magic_plate": "Magic Plate",
+		"aw.item.staff_singularity": "The Staff of Singularity",
+		"aw.item.sroll1": "Scroll: use on the block",
+		"aw.item.sroll2": "Scroll: Player use",
+		"aw.item.sroll3": "Scroll: use on mob",
+		"aw.item.sroll4": "Scroll: Level 1 damage",
+		"aw.item.sroll5": "Scroll: speed",
+		"aw.item.sroll6": "Scroll: Level 1 Treatment",
+		"aw.item.sroll7": "Scroll: Power",
+		"aw.item.sroll8": "Scroll: Murders",
+		"aw.item.sroll9": "Scroll: Block destruction",
+		"aw.item.sroll10": "Scroll: Level 2 damage",
+		"aw.item.sroll11": "Scroll: Level 3 damage",
+		"aw.item.sroll12": "Scroll: Level 2 Treatment",
+		"aw.item.sroll13": "Scroll: Level 3 treatment",
+		"aw.item.sroll14": "",
+		"aw.item.sroll15": "Scroll: Teleportation",
+		"aw.item.sroll16": "Scroll: Storms",
+		"aw.item.sroll17": "Scroll: strong attack",
+		"aw.item.sroll18": "Scroll: Weak Attack",
+		"aw.item.sroll19": "Scroll: Regeneration",
+		"aw.item.sroll20": "Scroll: Magnet",
+		"aw.item.sroll21": "Scroll: Summoning",
+		"aw.item.sroll22": "Scroll: Death Ray",
+		"aw.item.sroll23": "Scroll: Rain of the dead",
+		"aw.item.sroll24": "",
+		"aw.item.sroll25": "",
+		"aw.item.sroll26": "Scroll: Explosive strike",
+		"aw.item.sroll27": "Scroll: delays of 0.5 seconds",
+		"aw.item.sroll28": "Scroll: delays of 1 second",
+		"aw.item.sroll29": "Scroll: Purification",
+		"aw.item.sroll30": "",
+		"aw.item.sroll31": "",
+		"aw.item.sroll32": "Scroll: Fire Projectile",
+		"aw.item.sroll33": "Scroll: Firestorm",
+		"aw.item.sroll34": "Scroll: Fire Stream",
+		"aw.item.sroll35": "Scroll: Starfall",
+		"aw.item.sroll36": "Scroll: move by y",
+		"aw.item.sroll37": "Scroll: move by x",
+		"aw.item.sroll38": "Scroll: move by z",
+		"aw.item.sroll39": "Scroll: transferring the block by y",
+		"aw.item.sroll40": "Scroll: transferring a block by x",
+		"aw.item.sroll41": "Scroll: transferring the block by z",
+		"aw.item.sroll42": "Scroll: fog",
+		"aw.item.sroll43": "Scroll: Illusion",
+		"aw.item.sroll44": "Scroll: Breaking the Illusion",
+		"aw.item.sroll45": "Scroll: freezing",
+		"aw.item.sroll46": "Scroll: snowstorm",
+		"aw.item.sroll47": "Scroll: Signal Light",
+		"aw.item.madin_tashu": "Happy birthday to Madin tashu",
+		"aw.sroll.mode": "mode: {mode}",
+		"aw.item.spell_set": "A set of spells: ",
+		"aw.item.decor1": "Scroll scenery: Storm",
+		"aw.item.decor2": "Scroll decorations: field",
+		"aw.item.decor3": "Scroll scenery: Swarm",
+		"aw.item.decor4": "Scroll decoration: Spiral",
+		"aw.item.decor5": "Scroll scenery: blow",
+		"aw.item.decor6": "Scroll scenery: raise your hands",
+		"aw.item.decor7": "Scroll scenery: Shock wave",
+		"aw.item.decor8": "Scroll decorations: Glow block",
+		"aw.item.decor9": "Scroll decorations: indicator",
+		"aw.item.decor10": "Scroll scenery: directional strike",
+		"aw.item.bottle_empty": "Empty bottle",
+		"aw.item.bottle_potion": "A bottle of potion",
+		"aw.item.pelmeni": "A pot of dumplings",
+		"aw.item.tanatos_stone": "The Resurrection Stone",
+		"aw.item.amylet": "The Mysterious Amulet",
+		"aw.item.belt": "The Mysterious Belt",
+		"aw.item.death": "The Scythe of Death",
+		"aw.item.piece_knowledge": "A piece of knowledge: ",
+		"aw.item.book": "Class Book",
+		"aw.item.potion": "Potion",
+		
+		"aw.item.name_spell_set.displacement": "movements",
+		"aw.item.name_spell_set.swipe": "a strong blow",
+		"aw.item.scrutiny_book": "The Quest Book",
+		"aw.item.RobeOfTheAzureWizard": "Rob Maga",
+		"aw.item.fire_king": "The Fiery Crown",
+		"aw.item.fire_chestplate": "Fire Breastplate",
+		"aw.item.fire_leggings": "Fire Greaves",
+		"aw.item.fire_boots": "Fire Boots",
+		"aw.item.bandit_helmet": "Bandit's Helmet",
+		"aw.item.bandit_chestplate": "Bandit's Bib",
+		"aw.item.bandit_leggings": "Bandit Greaves",
+		"aw.item.bandit_boots": "Bandit Boots",
+		"aw.item.necromancer_helmet": "Necromancer's Hood",
+		"aw.item.necromancer_chestplate": "Necromancer's Mantle",
+		"aw.item.bandit_leggings": "Necromancer's Greaves",
+		"aw.item.bandit_boots": "Necromancer's Boots",
+		"aw.item.crystal_powder": "Crystal Powder",
+		"aw.item.dead_essence": "Essence of Death",
+		"aw.item.witherbone": "Wither bone",
+		"aw.item.dragon_powder": "Dragon powder",
+		"aw.item.enchantment_forest_flower": "Enchanted Flower",
+		"aw.item.petal_powder": "Enchanted Dust",
+		
+		
+		"aw.enchant.magic_protection": "Protection from magic",
+		"aw.enchant.dead_protection": "Protection from death",
+   "aw.enchant.aspects_restoration": "Regeneration of aspects",
+   "aw.enchant.magic_damage": "Magic Damage",
+		
+		
+		"aw.block.research_table": "Research Table",
+		"aw.block.rityal_pedestal": "Ritual pedestal",
+		"aw.block.magic_connector": "Magic Reenactor",
+		"aw.block.bowl": "The Cup of Desires",
+		"aw.block.cauldron": "Boiler",
+		"aw.block.magic_controller": "Magic Controller",
+		"aw.block.singularity_shrinker": "Singularity Squeezer",
+		"aw.block.singularity_extractor": "Singularity Extractor",
+		"aw.block.transmitter": "Aspects Transmitter",
+		"aw.block.ancient_bottom_obelisk": "Ancient obelisk",
+		"aw.block.magic_smithy": "Magic Forge",
+		"aw.block.enchanted_stone": "Enchanted stone",
+		"aw.block.magic_crusher": "Magic crusher",
+		"aw.block.aw_magic_storage": "Magic storage",
+		"aw.block.clone_scroll": "Scroll Cloning Table",
+		"aw.block.aw_generator_aspect": "Aspect generator",
+		"aw.block.generator_EU": "EU Generator",
+		
+		
+		"aw.creative_group.rune": "Runes",
+		"aw.creative_group.wand": "Sticks",
+		"aw.creative_group.events": "Events",
+		"aw.creative_group.sroll": "Scrolls",
+		"aw.creative_group.decor": "decorative scrolls",
+		"aw.creative_group.scrutiny": "Studies",
+		"aw.creative_group.armor": "Armor",
+		
+		"aw.clone_scroll.not_aspect": "Missing aspects",
+		"aw.clone_scroll.not_item": "Missing items",
+		
+		
+		"aw.block.aw_magic_stone": "Magic stone",
+		"aw.block.aw_magic_brick": "Magic brick",
+		"aw.message.player_dead_1": "Player {name} is enchanted to death",
+		"aw.message.player_dead_2": "Player {name} killed by forbidden spell",
+		
+		
+		
+		"aw.glasses.info": "Prediction glasses, designed for potion making, show whether you can put this item in the cauldron.",
+		"aw.guide.fog.title": "The Mist Scroll",
+		"aw.guide.fog.info": "Creates fog, within a radius of 15 blocks. Can be useful against players.",
+		"aw.message.entrance": "§2 Thank you for downloading the Ancient wonders mod! \n§3 In the VKontakte group you will be able to follow the development of the mod - https://vk.com/club186544580",
+		"aw.message.required_parameter": "Required {name} {level}",
+		"aw.message.required_level": "Requires {name} level {level}",
+		"aw.message.give_study": "It is necessary to study {scrutiny}",
+		"aw.message.parameter_update": "§2 Parameter: {name} has been improved to {value}, now it is of the {new} level",
+		"aw.message.cannot_class": "§4 You cannot change the class",
+		"aw.message.parameter_noy_update": "§4 Parameter: {name} of the maximum level",
+		"aw.message.have_class": "§4 You don't have a class",
+		"aw.message.wand": "Requires {name} {value} for the spell {scroll}",
+		"aw.message.wand.not_compatible_with": "{event} is not compatible with {scroll}",
+		"aw.message.use_empty": "You can't use an empty spell",
+		"aw.message.need_study": "It is necessary to study {name}",
+		"aw.tip_message.staff_singularity": "Block selected",
+		"aw.tip_message.binding_staff_singularity": "§2 The block is linked",
+		"aw.tip_message.binding_staff_singularity_error": "§4 The distance is too long, for this block the maximum is {value}",
+		"aw.message.ritualAspect500": "This ritual requires at least 500 aspects",
+		"aw.message.ritualMagic30": "For this ritual, you need at least level 30 magic",
+		"aw.message.selected_class": "§2 You have chosen the class: {name}",
+		"aw.message.scrutiny_all": "You have studied everything",
+		"aw.message.scrutiny": "You have studied: {name}",
+		"aw.message.scrutiny_give_noy": "You can't study: {name}",
+		"aw.message.sroll.kill": "to kill this mob, you need {aspects} aspects",
+		
+		"aw.guide.dungeon_wands": "Dungeon wands are quite rare, but extremely useful item. They have no drawbacks, fast and reliable.",
+		"aw.guide.clone_scroll": "With this block you will be able to clone scrolls.",
+		
+		"aw.guide.tab.singularity": "Magic industrial",
+		"aw.guide.freezing.title": "Freezing",
+		"aw.guide.freezing.info": "Releases a freezing projectile that deals 3 damage. Blocks the use of magic for an entity for 3 seconds.",
+		
+		"aw.guide.snowstorm.title": "Snow storm",
+		"aw.guide.snowstorm.info": "Releases a bunch of projectiles that deal 3 units of damage. And blocks the use of magic for entities for 3 seconds.",
+		
+		"aw.guide.magic_storage.title": "Magic Storage",
+		"aw.guide.magic_storage.info": "The magic storage can store 10,000 aspects",
+		
+		"aw.guide.magic_crusher.title": "Magic Crusher",
+		"aw.guide.magic_crusher.info": "Magic crusher, its result can be doubled, tripled, etc. if you put cloning runes under the blocks",
+		
+		"aw.guide.illusion.title": "Illusions",
+		"aw.guide.illusion.text1": "With the help of an illusion scroll, you can create the illusion of a block, it will look almost like a real one, but not osizable.",
+		
+		
+		"aw.guide.armor.description": "Description of the armor",
+		"aw.guide.armor.value": "protection {value}",
+		"aw.guide.armor.value.protection": "Protects against {name} attack on {value}",
+		"aw.guide.armor.damage": "Strength {value}",
+		
+		"aw.guide.tanatos.title": "The Resurrection Stone",
+		"aw.guide.tanatos.text": "The resurrection stone summons the boss Thanatos, a very dangerous opponent, deals mostly dead damage, with half of his health he becomes not vulnerable to any non-magical attacks.",
+		
+		"aw.guide.dead.title": "Braid",
+		"aw.guide.dead.text": "Scythe - this scythe was used by Thanatos himself, this scythe can be used as a magic wand, while the scythe deals 20 damage when attacking.",
+		
+		"aw.guide.tab.riches": "Treasures",
+		"aw.gui.cauldron_title": "Boiler",
+		"aw.gui.cauldron_text": "The cauldron is required for the preparation of potions, it can be crafted with the help of rituals. Potions have a strict sequence. Potions have a strict structure, in case of non-compliance with it, the water in the boiler becomes black. Potion structure: event, ingredient. events: Brains (uses a potion on the player), brown flesh (uses a potion on nearby mobs), ingredients: rabbit's foot, sugar, fire powder, spider's eye. improvements, they can be placed in the place of the ingredient, or after, light dust(+2 to the effect level, -80 to the effect time), redstone dust(-1 to the effect level, +160 to the effect time), spider legs separate the ingredients(you can put several ingredients), mysterious powder separates the effects.\n P.It is necessary to light a fire under the boiler.",		"aw.gui.cauldron_text2": "Пример:\n мозги, кроличья лапка, светопыль, паучьи лапки, редстоун\n мозги, кроличья лапка, паучьи лапки, сахар, редстоун, паучьи лапки, светопыль",
+		"aw.gui.ritual_title": "Rituals",
+		"aw.gui.ritual_text": "Rituals are the main mechanics of aw, each ritual may require a certain pumping and the number of aspects, how any ritual is built can be found in the official aw guide (a link can be found in the VK group), you can also find out using the Schematic mod",	"aw.gui.ritual_text2": "Ритуалы: ритуал 1 уровня, ритуал 2 уровня, ритуал 3 уровня, клонирования, призыва.",
+		"aw.gui.book_title": "Characteristics of your character",
+		"aw.gui.book_class": "Your class",
+		"magic": "Magic",
+		"protection": "Protection",
+		"necromancer": "Necromancy",
+		"aspects": "Aspects",
+		"aw.gui.book_class_noy": "To view the characteristics, you need to select a class",	
+		"aw.gui.rv.ritual_1lvl": "Level 1 Ritual",
+		"aw.gui.rv.ritual_2lvl": "Level 2 Ritual",
+		"aw.gui.rv.ritual_3lvl": "Level 3 Ritual",
+		"aw.gui.rv.bagdrop": "Drop from the pouch:",
+		"aw.gui.rv.generatorItem": "Generating items",
+		"aw.gui.rv.aw_boss_drop": "Drop the boss",
+	
+	
+		"aw.guide.text.characteristics": "Specifications",
+		"aw.guide.tab.basics": "Basics of Magic",
+		"aw.guide.srollEvent.title": "Events",
+		"aw.guide.srollEvent.text": "Events are a special type of scrolls that can be found in structures. They determine what or whom the wand spell will work on.",
+		
+		"aw.guide.book.title": "Class Book",
+		"aw.guide.book.text1": "This is a basic item, by opening the book you can see the characteristics of your character, and by clicking the book on the shift you can see your number of aspects. You may also need the book to interact with some blocks or activate rituals",		"aw.guide.book.text2": "Прокачка характеристик персонажа происходит, за счёт:",
+		
+		
+		"aw.guide.srollMagicConnector.title": "Magic Reenactor",
+		"aw.guide.srollMagicConnector.text1": "The magic reenactor is one of the basic blocks of the mod.",
+		"aw.guide.srollMagicConnector.text2": "For its execution, a wand must lie on it (you can find it in structures or craft it), put the wand on it (click with the wand)",
+		"aw.guide.srollMagicConnector.text3": "For its execution, a wand must lie on it (you can find it in structures or craft it), put the wand on it (click with the wand)",
+		"aw.guide.srollMagicConnector.text4": "When you click on the block with a scroll, then the scroll will be placed in a wand",
+		"aw.guide.srollMagicConnector.text5": "When you click the class book, you can take out the scroll",
+		"aw.guide.srollMagicConnector.text6": "When you click the class book on the shift, you can take out all the scrolls",
+		
+		
+		"aw.guide.srollEventBlock.title": "Event usage on the block",
+		"aw.guide.srollEventBlock.text1": "Events are a special type of scrolls that can be found in structures. They determine what or whom the wand spell will work on.",
+		"aw.guide.srollEventBlock.text2": "This scroll uses scrolls in a stick for blocks (click on the block) if the scrolls are compatible with this event.",
+		
+		
+		"aw.guide.srollEventPlayer.title": "Event usage on the player",
+		"aw.guide.srollEventPlayer.text1": "This scroll uses scrolls on the player or by the player (hold the wand) if the scrolls are compatible with this event.",
+		
+		
+		"aw.guide.srollEventEntity.title": "Event usage on mob",
+		"aw.guide.srollEventEntity.text1": "This scroll uses scrolls on the mob or mob (hold the wand on the mob), if the scrolls are compatible with this event.",
+		
+		
+		"aw.guide.acolyteStaff.title": "The Novice's Wand",
+		"aw.guide.acolyteStaff.text1": "A basic wand, wands have their own characteristics that affect the cost of the spell in it.",
+		
+		"aw.guide.magisStick.title": "Magic Wand",
+		"aw.guide.magisSword.title": "Magic Sword",
+		"aw.guide.magisPocox.title": "Magic Staff",
+		
+		
+		"aw.guide.classWarrior.title": "Warrior Class",
+		"aw.guide.classWarrior.text1": "Each class has its own maximum leveling. Due to this, you may or may not use something.",
+		"aw.guide.classWarrior.text2": "Before choosing a class, study everything to the maximum.",
+		"aw.guide.classWarrior.text3": "To select a class, use:",
+		"aw.guide.classWarrior.text4": "This paper can be crafted or found in structures.",
+		"aw.guide.classWarrior.text5": "Maximum class characteristics",
+		"aw.guide.classWarrior.text6": "maximum stock aspects",
+		
+		"aw.guide.classNecromancer.title": "Necromancer Class",
+		"aw.guide.classMage.title": "Mage Class",
+		
+		
+		"aw.guide.bowlWishes.title": "The Cup of Desires",
+		"aw.guide.bowlWishes.text1": "The cup of desires can deprive you of class. To do this, click on the rune of darkness more often and wait.",
+		"aw.guide.bowlWishes.text2": "Attention! after applying the bowl, you will have to re-select the class and swing again!",
+		
+		
+		"aw.guide.SpellSet.title": "A set of spells",
+		"aw.guide.SpellSet.text1": "The item can be put in a wand as well as a scroll. In this case, the spell that is inside will be used.",
+		
+		
+		"aw.guide.MagicController.title": "Magic Controller",
+		"aw.guide.MagicController.text1": "The magic controller is needed for 2 things 1)changing the wand skin 2) creating a set of spells.",
+		"aw.guide.MagicController.text2": "The magic controller can temporarily store energy, this block gains energy until it is full, when it is full it will emit energy.",
+		"aw.guide.MagicController.text3": "To change the skin of the wand, it is necessary to put the wand in the slot, then click on the block, with a class book (50ed energy is consumed).",
+		"aw.guide.MagicController.text4": "A set of spells is created in the same way as in the magic controller, but when you put an item in the set, 50% of energy is consumed, you can also give a name to the set, for this you need to click on the block with a changeable tag.",
+		
+		
+		
+		"aw.guide.tab.sroll": "Battle Scrolls",
+		"aw.guide.srollDamage1.title": "Level 1 Damage Scroll",
+		"aw.guide.srollDamage1.text1": "Deals 3 units of damage, can be found in structures. Not compatible with event usage on blocks.",
+		
+		
+		"aw.guide.srollDamage2.title": "Level 2 Damage Scroll",
+		"aw.guide.srollDamage2.text1": "Deals 14 damage units, can be found in structures. Not compatible with event usage on blocks.",
+		
+		
+		"aw.guide.srollDamage3.title": "Level 3 Damage Scroll",
+		"aw.guide.srollDamage3.text1": "Deals 58 damage units, can be found in structures. Not compatible with event usage on blocks.",
+		
+		
+		"aw.guide.srollWeakAttack.title": "Weak Attack Scroll",
+		"aw.guide.srollWeakAttack.text1": "Releases a beam from a mob that uses a spell, the beam deals 4 damage units.",
+		
+		
+		"aw.guide.srollStrongAttack.title": "Strong Attack Scroll",
+		"aw.guide.srollStrongAttack.text1": "Releases beams in random directions from a mob that uses a spell, each beam deals 4 damage units.",
+		
+		
+		"aw.guide.srollFireProjectile.title": "The Fire Projectile Scroll",
+		"aw.guide.srollFireProjectile.text1": "Releases a fire projectile from a mob that uses a spell, the projectile Deals 8 damage units.",
+		
+		
+		"aw.guide.srollFirestorm.title": "The Firestorm Scroll",
+		"aw.guide.srollFirestorm.text1": "Releases fire projectiles from the sky, the projectile deals 8 damage units.",
+		
+		
+		"aw.guide.srollFlameStream.title": "The Fiery Stream Scroll",
+		"aw.guide.srollFlameStream.text1": "Releases a bunch of projectiles from a mob that uses a spell, each projectile deals 8 damage units.",
+		
+		
+		"aw.guide.srollstarfall.title": "The Starfall Scroll",
+		"aw.guide.srollstarfall.text1": "Releases a projectile from the sky that deals 10 points of damage in flight, and 20 when it falls.",
+		
+		
+		"aw.guide.srollExplosive.title": "Explosive Strike Scroll",
+		"aw.guide.srollExplosive.text1": "Releases a projectile in the direction where the mob looks when it meets the block explodes or when the max distance flies.",
+		
+		
+		
+		"aw.guide.tab.srollSubsidiary": "Auxiliary Scrolls",
+		"aw.guide.srollHealing1.title": "Level 1 Treatment Scroll",
+		"aw.guide.srollHealing1.text1": "Restores, a mob that uses a spell, 5 health units.",
+		
+		"aw.guide.srollHealing2.title": "Level 2 Treatment Scroll",
+		"aw.guide.srollHealing2.text1": "Restores, a mob that uses a spell, 10 health units.",
+		
+		"aw.guide.srollHealing3.title": "Level 3 Treatment Scroll",
+		"aw.guide.srollHealing3.text1": "Restores, a mob that uses a spell, 40 health units.",
+		
+		"aw.guide.srollSpeed.title": "Scroll of Speed",
+		"aw.guide.srollSpeed.text1": "Imposes a speed effect on the mob that uses the spell.",
+		
+		"aw.guide.srollStrength.title": "Scroll of Power",
+		"aw.guide.srollStrength.text1": "Imposes a force effect on the mob that uses the spell.",
+		
+		"aw.guide.srollRegeneration.title": "Regeneration Scroll",
+		"aw.guide.srollRegeneration.text1": "Imposes a regeneration effect on the mob that uses the spell.",
+		
+		"aw.guide.srollMagnet.title": "Scroll Magnet",
+		"aw.guide.srollMagnet.text1": "Attracts all mobs in the area to the mob that uses the spell",
+		
+		"aw.guide.srollBlockDestroy.title": "Scroll of destruction of the block",
+		"aw.guide.srollBlockDestroy.text1": "Breaks the block on which the mobile is used.",
+		
+		"aw.guide.srollStorms.title": "The Storm Scroll",
+		"aw.guide.srollStorms.text1": "throws the mob up.",
+		
+		"aw.guide.srollTeleportations.title": "Teleportation Scroll",
+		"aw.guide.srollTeleportations.text1": "Accelerates the player to where he is looking.",
+		
+		"aw.guide.srollCleansing.title": "The Purification Scroll",
+		"aw.guide.srollCleansing.text1": "Removes all effects",
+		
+		
+		
+		"aw.guide.tab.srollKill": "Forbidden Scrolls",
+		"aw.guide.srollKill.title": "The Murder Scroll",
+		"aw.guide.srollKill.text1": "Kills a mob, can be found in structures. Not compatible with event usage on blocks.",
+		"aw.guide.srollKill.text2": "aspects (mob life * 3)",
+		
+		
+		"aw.guide.srollSummoning.title": "Summoning Scroll",
+		"aw.guide.srollSummoning.text1": "Summons mobs that attack everyone except the one who called them.",
+		
+		"aw.guide.srollDeathRay.title": "Death Ray Scroll",
+		"aw.guide.srollDeathRay.text1": "Releases a beam that kills the mob.",
+		
+		"aw.guide.srollRainOfTheDead.title": "The Rain of the Dead Scroll",
+		"aw.guide.srollRainOfTheDead.text1": "Releases rays from the sky, which Kills mobs.",
+		
+		"aw.guide.singularity.title": "Singularity",
+		"aw.guide.singularity.text1": "Singularity is one of the basic things of fashion. The singularity is used to create aspects. To create a singularity, you need a Singularity Squeezer block, then you need to put runes in it, each rune reaches + 10 to the singularity charge (with each 250 charge, the singularity's output increases). To extract aspects from a singularity, a singularity extractor is needed, when redstone is fed, it turns on/off the ability to give players aspects.",
+		"aw.guide.singularity.text2": "The extractor can transfer aspects to blocks that consume aspects (but within a radius of 5 blocks). You can also use the aspect transmitter to move aspects over longer distances (range of 3 blocks)"
+	}
+}

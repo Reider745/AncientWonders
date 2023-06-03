@@ -1,0 +1,84 @@
+{
+	"format_version": "1.8.0",
+	"minecraft:entity": {
+		"description": {
+			"identifier": "aw:tanatos",
+			"is_spawnable": false,
+			"is_summonable": true,
+			"is_experimental": false
+		},
+		"components": {
+			"minecraft:type_family": {
+				"family": [
+					"god",
+      "monster"
+				]
+			},
+			"minecraft:collision_box": {
+				"width": 1,
+				"height": 2
+			},
+			"minecraft:silverfish_angry": {
+				"minecraft:angry": {
+					"duration": -1,
+					"broadcastAnger": true,
+					"broadcastRange": 20,
+					"calm_event": {
+						"event": "minecraft:on_calm",
+						"target": "self"
+					}
+				}
+			},
+			"minecraft:behavior.random_stroll": {
+				"priority": 1,
+				"speed_multiplier": 0.7
+			},
+      "minecraft:boss": {
+        "should_darken_sky": true,
+        "hud_range": 125
+      },
+			"minecraft:navigation.walk": {
+				"is_amphibious": false,
+				"can_path_over_water": true,
+				"can_pass_doors": true,
+				"can_open_doors": false,
+				"avoid_damage_blocks": false
+			},
+			"minecraft:behavior.melee_attack": {
+				"priority": 1,
+				"speed_multiplier": 0.5,
+				"track_target": true
+			},
+			"minecraft:attack": {
+				"damage": 20
+			},
+			"minecraft:health": {
+				"value": 800,
+				"max": 800
+			},
+			"minecraft:loot": {
+				"table": "loot_tables/entities/undefined"
+			},
+			"minecraft:nameable": {},
+			"minecraft:movement.basic": {},
+			"minecraft:jump.static": {},
+			"minecraft:movement": {
+				"value": 0.4
+			},
+			"minecraft:behavior.nearest_attackable_target": {
+				"priority": 3,
+				"entity_types": [
+					{
+						"filters": {
+							"any_of": []
+						},
+						"max_dist": 8,
+						"attack_interval": 10
+					}
+				]
+			},
+			"minecraft:physics": {}
+		},
+		"events": {}
+	}
+}

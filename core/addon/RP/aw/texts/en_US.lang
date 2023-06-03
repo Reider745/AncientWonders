@@ -1,0 +1,7 @@
+entity.aw:boss0.name=Чёкнутый маг
+entity.aw:tanatos.name=God of death
+entity.aw:skeleton.name=Призванный
+entity.aw:stone_golem.name=Enchanted Golem
+item.spawn_egg.entity.aw:stone_golem.name=Spawn Enchanted Golem
+aw.tips.game.1 = Studies?  Go and collect them around the world!
+aw.tips.game.2 = Can't wear armor, upgrade protection.
