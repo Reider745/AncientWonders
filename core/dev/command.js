@@ -1,36 +1,273 @@
 function getPlayerByName(name){
 	let players = Network.getConnectedPlayers();
-	for(let i in players)
-		if(Entity.getNameTag(players[i])==name)
-			return players[i];
+	for(let i in players){
+		let player = players[i];
+		if(String(Entity.getNameTag(player)) == name)
+			return player;
+	}
+	return null;
 }
-Network.addServerPacket("class.clear", function(p){
-	if(__config__.get("debug.command"))
-		delete classPlayer[getPlayerByName(p)]
-});
 
-Network.addServerPacket("scrutiny.clear", function(p){
-	if(__config__.get("debug.command")){
-		let scru = ScrutinyAPI_V2.scrutiny;
-		let wins = Object.keys(scru);
-		for(let w in wins){
-			let tabs = Object.keys(scru[wins[w]]);
-			for(let t in tabs){
-				if(scru[wins[w]][tabs[t]].player[getPlayerByName(p)])
-					delete scru[wins[w]][tabs[t]].player[getPlayerByName(p)];
-			}
+function parseCommand(symbols){
+	let args = [""];
+	let str = false;
+	for(let i in symbols){
+		let symbol = symbols[i];
+		
+		if(symbol == " " && !str)
+			args.push("");
+			
+		if(symbol == "\""){
+			str = !str;
+			continue;
 		}
+		if(symbol != " " || str)
+			args[args.length - 1] += symbol;
+	}
+	return args;
+}
+
+function CommandRegistry(name){
+	this.name = name;
+	
+	let _types = [];
+	let _runClient = function(){};
+	let _runServer = function(){};
+	let _more_entity = false;
+	let _args = [];
+	let _description = "";
+	
+	this.getDescription = function(){
+		return Translation.translate(_description);
+	}
+	
+	this.setDescription = function(description){
+		_description = description;
+		return this;
+	}
+	
+	let showed_command = true;
+	
+	this.setShowedCommand = function(value){
+		showed_command = value;
+		return this;
+	}
+	
+	this.canShowedCommand = function(){
+		return showed_command;
+	}
+	
+	this.setTypesArgs = function(){
+		_types = arguments;
+		return this;
+	}
+	
+	this.setMoreEntity = function(more_entity){
+		_more_entity = more_entity;
+		return this;
+	}
+	
+	this.getTypesArgs = function(){
+		return _types;
+	}
+	
+	this.setArgs = function(args, player, pos){
+		_args = [];
+		if(_types.length != args.length)
+			return "не достаточно аргументов";
+		
+		for(let i in args){
+			let type = _types[i];
+			if(!Array.isArray(type))
+				type = type.split(":")[0];
+			let value = args[i];
+			
+			if(type == "number"){
+				try{
+					_args.push(parseInt(value));
+				}catch(e){return "Не верный тип числа";}
+			}else if(type == "mobs" || type == "player"){
+				let mob = this.getMobsFor(value, player, pos);
+				
+				if(_more_entity){
+					if(mob === null) 
+						return "Мобы не найдены";
+					_args.push(mob);
+				}else{
+					if(mob.length > 1) 
+						return "Не допустимое количество мобов";
+					if(mob[0] === null) 
+						return "Моб не найден";
+					_args.push(mob[0]);
+				}
+			}else if(type == "boolean"){
+				switch(value){
+					case "true":
+						_args.push(true);
+					break;
+					case "false":
+						_args.push(false);
+					break;
+					default:
+						return "Не допустимое значение";
+				}
+			}else if(Array.isArray(type)){
+				if(type.indexOf(value) == -1)
+					return "Тип "+value+" не допустим";
+				_args.push(value);
+			}else
+				_args.push(value);
+		}
+		
+		return "complete";
+	}
+	
+	this.getMobsFor = function(value, player, pos){
+		let entitys = Network.getConnectedPlayers();
+		switch(value){
+			case "@s":
+				return [player];
+			case "@r":
+				return [entitys[Math.floor(Math.random()*entitys.length)]];
+			case "@p":
+				if(!pos) return null;
+				let closest = {
+					entity: null,
+          dis: 999999999
+        };
+        for(let i in entitys){
+        	let entity = entitys[i];
+        	let dis = Entity.getDistanceToCoords(entity, pos);
+        	if(dis < closest.dis) {
+        		closest.entity = entity;
+        		closest.dis = dis;
+					}
+				}
+				return [Number(closest.entity)];
+			break;
+			case "@a":
+				return entitys;
+			default:
+				return [getPlayerByName(value)];
+		}
+	}
+	
+	this.send = function(){
+		Network.sendToServer("command."+name, {
+			args: _args
+		});
+		return this;
+	}
+	
+	this.setRunClient = function(func){
+		_runClient = func;
+		return this;
+	}
+	
+	this.runClient = function(){
+		return _runClient.call(this, _args);
+	}
+	
+	
+	this.setRunServer = function(func){
+		_runServer = func;
+		return this;
+	}
+	
+	this.runServer = function(client, args){
+		return _runServer.call(this, client, args);
+	}
+}
+
+CommandRegistry.commands = {};
+
+CommandRegistry.create = function(cmd){
+	Network.addServerPacket("command."+cmd.name, function(client, data){
+		cmd.runServer(client, data.args);
+	});
+	
+	CommandRegistry.commands["/"+cmd.name] = cmd;
+}
+
+const CommandDefault = {
+	CLIENT(){
+		this.send();
+		return true;
+	}
+};
+
+Callback.addCallback("NativeCommand", function(str){
+	let args = parseCommand(str.split(""));
+	let name = args.shift();
+	
+	let cmd = CommandRegistry.commands[name];
+	if(cmd){
+		let player = Number(Player.get());
+		let status = cmd.setArgs(args, player, Entity.getPosition(player));
+		if(status != "complete"){
+			Game.message(status);
+			Game.prevent();
+			return;
+		}
+		if(cmd.runClient())
+			Game.prevent();
 	}
 });
 
-Callback.addCallback("NativeCommand", function(str){
-	let cmd = str.split(" ");
-	if(cmd[0] == "/aw")
-		if(cmd[1] == "class"){
-			if(cmd[2] == "clear")
-				Network.sendToServer("class.clear", cmd[3])
-		}else if(cmd[1] == "scrutiny"){
-			if(cmd[2] == "clear")
-				Network.sendToServer("scrutiny.clear", cmd[3])
+
+CommandRegistry.create(new CommandRegistry("aw_help")
+	.setDescription("return all command")
+	.setRunClient(function(){
+		let message = "=======Ancient wonders=======";
+		
+		for(let i in CommandRegistry.commands){
+			let command = CommandRegistry.commands[i];
+			if(!command.canShowedCommand()) continue;
+			
+			let message_to_command = "\n/"+command.name;
+			let types = command.getTypesArgs();
+			for(let a in types){
+				let type = types[a];
+				if(Array.isArray(type)){
+					let enum_values = "";
+					for(let b in type)
+						enum_values+=type[b]+(b === ""+(type.length-1) ? "" : ",");
+						message_to_command += " "+enum_values;
+				}else
+					message_to_command += " "+type;
+			}
+				
+			let description = command.getDescription();
+			if(description != "")
+				message_to_command += " - "+description
+			message += message_to_command;
 		}
-})
+		
+		Game.message(message);
+		return true;
+	}));
+	
+CommandRegistry.create(new CommandRegistry("aw_stats")
+	.setDescription("dev: set class developer, new: delete class")
+	.setTypesArgs(["dev", "new"], "player")
+	.setRunServer(function(client, args){
+		switch(args[0]){
+			case "dev":
+				AncientWonders.setPlayerClass(args[1], "developer");
+			break;
+			case "new":
+				AncientWonders.setPlayerClass(args[1]);
+			break;
+		}
+		PlayerAC.message(args[1], "Команда успешно выполнена");
+	})
+	.setRunClient(CommandDefault.CLIENT));
+	
+CommandRegistry.create(new CommandRegistry("scrutiny_save")
+	.setDescription("disabled/enabled save scrutiny")
+	.setTypesArgs("boolean")
+	.setRunServer(function(client, args){
+		ScrutinyAPI.save = args[0];
+		PlayerAC.message(client.getPlayerUid(), "Команда успешно выполнена");
+	})
+	.setRunClient(CommandDefault.CLIENT));

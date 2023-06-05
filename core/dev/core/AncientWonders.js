@@ -198,3 +198,10 @@ new AncientWonders.ClassType("necromancer")
 	.addParameter("necromancer", 5, 100)
 	.addParameter("aspects", 0, 50000)
 	.setParameter("aspectsNow", 5000);
+
+new AncientWonders.ClassType("developer")
+	.addParameter("magic", 100, 100)
+	.addParameter("protection", 100, 100)
+	.addParameter("necromancer", 100, 100)
+	.addParameter("aspects", 2e10, 2e10)
+	.setParameter("aspectsNow", 2e10);
