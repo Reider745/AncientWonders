@@ -75,24 +75,39 @@ let ProjectTile = {
 				duration: duration
 			});
 			let posEnd;
-			let animation = createAnimation(duration, function(v, anim){
-				let pos = {
-					x: x+(ax*v),
-					y: y+(ay*v),
-					z: z+(az*v)
-				};
-				if(!region.isChunkLoadedAt(pos.x, pos.z)){
-					anim.cancel();
-					return;
-				}
-				posEnd = pos;
-				if(!World.canTileBeReplaced(region.getBlockId(pos.x,pos.y,pos.z), region.getBlockData(pos.x,pos.y,pos.z)))
-					anim.cancel();
-				func(region, pos, player, anim, v);
-			});
-			animation.addListener({
-				onAnimationEnd(){
-					endServer(region, player, posEnd, animation);
+			let time_tick = duration / 1000 * 20;
+			Updatable.addUpdatable({
+				tick: 0,
+				cancel(){
+					this.remove = true;
+					endServer(region, player, posEnd, this);
+				},
+				update(){
+					if(this.tick <= time_tick){
+						let v = this.tick / time_tick;
+						let pos = {
+							x: x+(ax*v),
+							y: y+(ay*v),
+							z: z+(az*v)
+						};
+						if(!region.isChunkLoadedAt(pos.x, pos.z)){
+							this.remove = true;
+							endServer(region, player, posEnd, this);
+							return;
+						}
+						posEnd = pos;
+						if(!World.canTileBeReplaced(region.getBlockId(pos.x,pos.y,pos.z), region.getBlockData(pos.x,pos.y,pos.z))){
+							this.remove = true;
+							endServer(region, player, posEnd, this);
+							return;
+						}
+						func(region, pos, player, this, v);
+						
+						this.tick++;
+					}else{
+						this.remove = true;
+						endServer(region, player, posEnd, this);
+					}
 				}
 			});
 		}
@@ -101,43 +116,34 @@ let ProjectTile = {
 			ay = ay;
 			az = az;
 			part = typeof part == "number" ? part : ParticlesStorage.get(part);
-		//	alert("1")
 			let emitter = new Particles.ParticleEmitter(x, y, z);
-			//alert("2")
 			emitter.setEmitRelatively(true);
-			//alert("3")
 			emitter.emit(part, 0, 0, 0, 0);
-		//	alert("4")
+			
 			let posEnd;
 			let region = BlockSource.getCurrentClientRegion();
-			//alert("5")
 			let player = Player.get();
-		//	alert("6")
+			
 			let animation = createAnimation(duration, function(v, anim){
-			//	alert("7")
 				let pos = {
 					x: x+(ax*v),
 					y: y+(ay*v),
 					z: z+(az*v)
 				};
-				//alert("8")
 				if(!region.isChunkLoadedAt(pos.x, pos.z)){
 					anim.cancel();
 					return;
 				}
-				//alert("9")
 				posEnd = pos;
 				emitter.moveTo(pos.x,pos.y,pos.z);
-				//alert("10")
 				if(!World.canTileBeReplaced(region.getBlockId(pos.x,pos.y,pos.z), region.getBlockData(pos.x,pos.y,pos.z)))
 					anim.cancel();
-			//	alert("11");
 				clientFunc(region, pos, player, anim, v);
-				//alert("12")
 			});
 			animation.addListener({
 				onAnimationEnd(){
 					endClient(region, player, posEnd, animation);
+					emitter.release();
 				}
 			});
 		}
@@ -161,6 +167,7 @@ let ProjectTileFire = new ProjectTile.create("fire")
 		ProjectTile.damageToProjectTile(pos, player, "magic", 8, 1);
 	});
 
+
 let ProjectTileStarfall = new ProjectTile.create("starfall")
 	.setServerLogic(function(region, pos, player){
 		ProjectTile.damageToProjectTile(pos, player, "magic", 10);
@@ -172,6 +179,8 @@ let ProjectTileStarfall = new ProjectTile.create("starfall")
 		for(let i = 0;i < 14;i++)
 			ParticlesAPI.spawnCircleClient(ParticlesType.part2, pos.x, pos.y+(0.2*i)+1, pos.z, i / 1.3, 11 * i, 2);
 	});
+
+
 let ProjectTileSnow_1 = new ProjectTile.create("snow_1")
 	.setServerLogic(function(region, pos, player){
 		ProjectTile.damageToProjectTile(pos, player, "magic", 20, 1.5, function(ent){
@@ -184,13 +193,17 @@ let ProjectTileSnow_1 = new ProjectTile.create("snow_1")
 		Particles.addParticle(ParticlesType.snow, pos.x+(Math.random()-Math.random()), pos.y+(Math.random()-Math.random()), pos.z+(Math.random()-Math.random()), 0, 0, 0);
 	});
 
+
 let BOOM = new ProjectTile.create("boom")
-	.setServerLogic(function(){
+	.setServerLogic(function(region, pos, player){
 		ProjectTile.damageToProjectTile(pos, player, "magic", 4);
 	})
 	.setClientLogic(function(region, pos){
 		Particles.addParticle(ParticlesType.project, pos.x+(Math.random()-Math.random()), pos.y+(Math.random()-Math.random()), pos.z+(Math.random()-Math.random()), 0, 0, 0);
 	});
+	
+	
+	
 function spawnPizdes(pos, region, player){
 	let count = Math.floor(Math.random()*15)+15;
 	for(let i = 0;i < count;i++){
@@ -198,7 +211,7 @@ function spawnPizdes(pos, region, player){
 	}
 }
 let ProjectTileFireBoom = new ProjectTile.create("fire_boom")
-	.setServerLogic(function(region, pos, player, anim){
+	.setServerLogic(function(region, pos, player, anim){ 
 		ProjectTile.damageToProjectTile(pos, player, "magic", 5, 1.5, function(ent){
 			anim.cancel();
 		});

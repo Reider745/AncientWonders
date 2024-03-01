@@ -107,13 +107,17 @@ TileEntity.registerPrototype(BlockID.MagicConnector, {
                 if(prot.type == "event"){
                     this.blockSource.spawnDroppedItem(this.x, this.y+1,this.z, this.data.item.extra.getInt("event", 0), 1, 0, null);
                     this.data.item.extra.putInt("event", id);
-                }
-                if(prot.type == "function"){
+                }else if(prot.type == "function"){
                 	let arr = Wands.getArrByExtra(this.data.item.extra);
-                    arr.push(Entity.getCarriedItem(player))
-                   let event = this.data.item.extra.getInt("event", 0); 
-                    this.data.item.extra = Wands.getExtraByArr(arr);
-                    this.data.item.extra.putInt("event", event);
+                	if(arr.length < Wands.stick[this.data.item.id].scroll_max){
+                  	arr.push(Entity.getCarriedItem(player));
+                  	let event = this.data.item.extra.getInt("event", 0); 
+                   this.data.item.extra = Wands.getExtraByArr(arr);
+                   this.data.item.extra.putInt("event", event);
+                  }else{
+                  	PlayerAC.message(player, Translation.translate("aw.message.scroll_max"));
+                  }
+                   
                 }
                 prot.installation(player, Entity.getCarriedItem(player));
             }else{

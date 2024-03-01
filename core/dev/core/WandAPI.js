@@ -1,3 +1,5 @@
+let players_use_wand = {};
+
 var Wands = {
 	//var
 	stick: {},
@@ -18,6 +20,7 @@ var Wands = {
     obj.scrutiny.tab = obj.scrutiny.tab || "basics";
     obj.scrutiny.window = obj.scrutiny.window || "aw";
     obj.use = obj.use || function(){};
+    obj.scroll_max = obj.scroll_max || 1;
     this.stick[obj.id] = obj;
     Item.setToolRender(obj.id, true);
     Item.setMaxUseDuration(obj.id, obj.time);
@@ -96,6 +99,10 @@ var Wands = {
 			let extra = item.extra || new ItemExtraData();
 			let wand = Wands.getStick(item.id);
 			if(wand.scrutiny.enable || ScrutinyAPI.isScrutiny(player, wand.scrutiny.window, wand.scrutiny.tab, wand.scrutiny.name)){
+
+				if(players_use_wand[player])
+					return;
+				
 				let event = Wands.getPrototype(extra.getInt("event", 0));
 				if(event.event!= name)
 					return;
@@ -105,10 +112,13 @@ var Wands = {
         }else if(wand.sound){
         	playSound(wand.sound, player, 16);
         }
+        
+        players_use_wand[player] = true;
+        
         let spells = Wands.getArrByExtra(extra);
         if(wand.startUsing)
         	wand.startUsing(packet);
-        for(let i in spells){
+        for(let i = 0;i < Math.min(spells.length,wand.scroll_max);i++){
         	if(Wands.isCompatibility(extra.getInt("event", 0), spells[i].id)){
         			
         		let prot = Wands.getPrototype(spells[i].id);
@@ -157,6 +167,8 @@ var Wands = {
         if(spells.length == 0){
         	PlayerAC.message(player, Translation.translate("aw.message.use_empty"));
         }
+        
+        delete players_use_wand[player];
 			}else{
       	PlayerAC.message(player, TranslationLoad.get("aw.message.need_study", [["name", wand.scrutiny.name]]));
 			}
@@ -165,6 +177,7 @@ var Wands = {
 			alert(e)
 			Logger.LogError(e);
 			Logger.Flush();
+			delete players_use_wand[player];
 		}
 		});
 	},

@@ -38,7 +38,7 @@ function CommandRegistry(name){
 	let _description = "";
 	
 	this.getDescription = function(){
-		return Translation.translate(_description);
+		return translate(_description);
 	}
 	
 	this.setDescription = function(description){
@@ -74,7 +74,7 @@ function CommandRegistry(name){
 	this.setArgs = function(args, player, pos){
 		_args = [];
 		if(_types.length != args.length)
-			return "не достаточно аргументов";
+			return translate("aw.command.not_enough_arguments");
 		
 		for(let i in args){
 			let type = _types[i];
@@ -85,19 +85,19 @@ function CommandRegistry(name){
 			if(type == "number"){
 				try{
 					_args.push(parseInt(value));
-				}catch(e){return "Не верный тип числа";}
+				}catch(e){return translate("aw.command.invalid_number");}
 			}else if(type == "mobs" || type == "player"){
 				let mob = this.getMobsFor(value, player, pos);
 				
 				if(_more_entity){
 					if(mob === null) 
-						return "Мобы не найдены";
+						return translate("aw.command.mobs_not_found");
 					_args.push(mob);
 				}else{
 					if(mob.length > 1) 
-						return "Не допустимое количество мобов";
+						return translate("aw.command.not_allowed_mobs");
 					if(mob[0] === null) 
-						return "Моб не найден";
+						return translate("aw.command.mob_not_found");
 					_args.push(mob[0]);
 				}
 			}else if(type == "boolean"){
@@ -109,11 +109,11 @@ function CommandRegistry(name){
 						_args.push(false);
 					break;
 					default:
-						return "Не допустимое значение";
+						return translate("aw.command.invalid_value");
 				}
 			}else if(Array.isArray(type)){
 				if(type.indexOf(value) == -1)
-					return "Тип "+value+" не допустим";
+					return translate("aw.command.invalid_type", [["name", value]]);
 				_args.push(value);
 			}else
 				_args.push(value);
@@ -127,26 +127,34 @@ function CommandRegistry(name){
 		switch(value){
 			case "@s":
 				return [player];
+				
 			case "@r":
 				return [entitys[Math.floor(Math.random()*entitys.length)]];
+				
 			case "@p":
 				if(!pos) return null;
+				
 				let closest = {
 					entity: null,
           dis: 999999999
         };
+        
         for(let i in entitys){
         	let entity = entitys[i];
         	let dis = Entity.getDistanceToCoords(entity, pos);
+        	
         	if(dis < closest.dis) {
         		closest.entity = entity;
         		closest.dis = dis;
 					}
 				}
+				
 				return [Number(closest.entity)];
 			break;
+			
 			case "@a":
 				return entitys;
+				
 			default:
 				return [getPlayerByName(value)];
 		}
@@ -177,14 +185,22 @@ function CommandRegistry(name){
 	this.runServer = function(client, args){
 		return _runServer.call(this, client, args);
 	}
+	
+	this.successfully = function(player){
+		if(player)
+			PlayerAC.message(player, translate("aw.command.successfully"));
+		else
+			Game.message(translate("aw.command.successfully"));
+	}
 }
 
 CommandRegistry.commands = {};
 
 CommandRegistry.create = function(cmd){
-	Network.addServerPacket("command."+cmd.name, function(client, data){
-		cmd.runServer(client, data.args);
-	});
+	if(!Game.isDedicatedServer())
+		Network.addServerPacket("command."+cmd.name, function(client, data){
+			cmd.runServer(client, data.args);
+		});
 	
 	CommandRegistry.commands["/"+cmd.name] = cmd;
 }
@@ -216,7 +232,7 @@ Callback.addCallback("NativeCommand", function(str){
 
 
 CommandRegistry.create(new CommandRegistry("aw_help")
-	.setDescription("return all command")
+	.setDescription("aw.command.description.aw_help")
 	.setRunClient(function(){
 		let message = "=======Ancient wonders=======";
 		
@@ -248,7 +264,7 @@ CommandRegistry.create(new CommandRegistry("aw_help")
 	}));
 	
 CommandRegistry.create(new CommandRegistry("aw_stats")
-	.setDescription("dev: set class developer, new: delete class")
+	.setDescription("aw.command.description.aw_stats")
 	.setTypesArgs(["dev", "new"], "player")
 	.setRunServer(function(client, args){
 		switch(args[0]){
@@ -259,15 +275,15 @@ CommandRegistry.create(new CommandRegistry("aw_stats")
 				AncientWonders.setPlayerClass(args[1]);
 			break;
 		}
-		PlayerAC.message(args[1], "Команда успешно выполнена");
+		this.successfully(args[1]);
 	})
 	.setRunClient(CommandDefault.CLIENT));
 	
 CommandRegistry.create(new CommandRegistry("scrutiny_save")
-	.setDescription("disabled/enabled save scrutiny")
+	.setDescription("aw.command.description.scrutiny_save")
 	.setTypesArgs("boolean")
 	.setRunServer(function(client, args){
 		ScrutinyAPI.save = args[0];
-		PlayerAC.message(client.getPlayerUid(), "Команда успешно выполнена");
+		this.successfully(client.getPlayerUid());
 	})
 	.setRunClient(CommandDefault.CLIENT));

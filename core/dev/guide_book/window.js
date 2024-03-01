@@ -15,10 +15,10 @@ function getBookWandData(id){
   arr.push({text: Translation.translate("aw.guide.text.characteristics"), size: 20});
   let wand = Wands.getStick(id);
   let keys = Object.keys(wand.bonus);
-  for(let i in keys){
+  for(let i in keys)
   	arr.push({text: keys[i] + " " + -wand.bonus[keys[i]], size: 15});
-  }
   arr.push({text: "time "+wand.time, size: 15});
+  arr.push({text: "scroll max  "+wand.scroll_max, size: 15});
   return arr;
 }
 ScrutinyAPI.register("aw", {

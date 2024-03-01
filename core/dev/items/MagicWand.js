@@ -1,9 +1,9 @@
-if(__config__.getBool("debug.enabled")){
 IDRegistry.genItemID("awDebugWand"); 
 Item.createItem("awDebugWand", "debug wand", {name: "stick", meta: 0}, {stack: 1});
 Wands.addStick({
     id: ItemID.awDebugWand,
     time: 5,
+    scroll_max: 9999,
     texture: {
         name: "stick"
     },
@@ -14,10 +14,11 @@ Wands.addStick({
         aspects: 99999999
     }
 });
-}
+
 Wands.addStick({
     id: ItemID.magis_stick, 
     time: 20,
+    scroll_max: 2,
     sound: "magic_1",
     scrutiny: {
         name: "magisStick"
@@ -31,6 +32,7 @@ Wands.addStick({
     id: ItemID.acolyteStaff,
     time: 30,
     sound: "magic_0",
+    scroll_max: 1,
     scrutiny: {
         name: "acolyteStaff"
     },
@@ -47,6 +49,7 @@ Wands.addStick({
 Wands.addStick({
     id: ItemID.magis_sword,
     time: 30,
+    scroll_max: 2,
     sound: "magic_2",
     scrutiny: {
         name: "magisSword"
@@ -65,6 +68,7 @@ MagicCore.setUsingItem({id: ItemID.magis_sword, data: 0}, "protection", 35);
 Wands.addStick({
     id: ItemID.magis_pocox,
     time: 20,
+    scroll_max: 2,
     sound: "magic_3",
     scrutiny: {
         name: "magisPocox"
@@ -83,6 +87,7 @@ Wands.addStick({
 Wands.addStick({
     id: ItemID.aw_dead,
     time: 30,
+    scroll_max: 6,
     sound: "magic_4",
     scrutiny: {
     	name: "dead",
@@ -104,6 +109,7 @@ MagicCore.setUsingItem({id: ItemID.magis_pocox, data: 0}, "necromancer", 20);
 Wands.addStick({
     id: ItemID.magis_stick_2_lvl,
     time: 25,
+    scroll_max: 4,
     sound: "magic_1",
     scrutiny: {
         name: "magisStick2lvl"
@@ -123,6 +129,7 @@ MagicCore.setUsingItem({id: ItemID.magis_stick_2_lvl, data: 0}, "magic", 40);
 Wands.addStick({
 	id: ItemID.aw_magic_stick,
 	time: 20,
+	scroll_max: 5,
 	sound: "magic_1",
 	scrutiny: {
 		tab: "riches",
@@ -143,6 +150,7 @@ MagicCore.setUsingItem({id: ItemID.aw_magic_stick, data: 0}, "magic", 60);
 Wands.addStick({
     id: ItemID.magis_sword_2_lvl,
     time: 25,
+    scroll_max: 4,
     sound: "magic_2",
     scrutiny: {
         name: "magisSword2lvl"
@@ -162,6 +170,7 @@ MagicCore.setUsingItem({id: ItemID.magis_sword_2_lvl, data: 0}, "protection", 50
 Wands.addStick({
 	id: ItemID.aw_magic_shovel,
 	time: 20,
+	scroll_max: 5,
 	sound: "magic_2",
 	scrutiny: {
 		tab: "riches",
@@ -182,6 +191,7 @@ MagicCore.setUsingItem({id: ItemID.aw_magic_shovel, data: 0}, "protection", 60);
 Wands.addStick({
     id: ItemID.magis_pocox_2_lvl,
     time: 15,
+    scroll_max: 4,
     sound: "magic_3",
     texture: {
         name: "magic_staff_2_lvl"
@@ -201,6 +211,7 @@ MagicCore.setUsingItem({id: ItemID.magis_pocox_2_lvl, data: 0}, "necromancer", 4
 Wands.addStick({
 	id: ItemID.aw_magic_staff,
 	time: 20,
+	scroll_max: 5,
 	sound: "magic_2",
 	scrutiny: {
 		tab: "riches",

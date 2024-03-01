@@ -35,13 +35,14 @@ ModAPI.addAPICallback("ICore", function(api){
 				this.data.aspect -= 1;
 		}
 	});
-	SingularityAPI.setBlockOutputName(BlockID.aw_generator_EU, "output", true);
+	SingularityAPI.setBlockInputName(BlockID.aw_generator_EU, "base", true);
 	ICRender.getGroup("ic-wire").add(BlockID.aw_generator_EU, -1);
 	EnergyTileRegistry.addEnergyTypeForId(BlockID.aw_generator_EU, EU);
 	
 	IDRegistry.genBlockID("aw_generator_aspect");
 	Block.createBlock("aw_generator_aspect", [ {name: "aw.block.aw_generator_aspect", texture: [["plant", 0]], inCreative: true} ]);
-	
+
+	SingularityAPI.setBlockOutputName(BlockID.aw_generator_aspect, "base", true);
 	GeneratorIc(null, BlockID.aw_enchanted_stone).setBlockModel(BlockID.aw_generator_aspect);
 	RitualAPI.addRecipe("ritual_1", "aw_generator_aspect", [BlockID.aw_enchanted_stone, BlockID.aw_enchanted_stone, ItemID.magic_crystal, BlockID.aw_enchanted_stone], {
 		id: BlockID.aw_generator_aspect,
@@ -58,7 +59,7 @@ ModAPI.addAPICallback("ICore", function(api){
 		defaultValues: {
 			aspect: 0,
 			aspectMax: 50,
-			pos:{x:0,y:0,z:0},
+			pos:null,
 			energy: 0
 		},
 		canReceiveEnergy(){
@@ -67,12 +68,17 @@ ModAPI.addAPICallback("ICore", function(api){
 		canExtractEnergy(){
 			return false;
 		},
+		client: new SingularityLines.Client(),
+		init(){
+			SingularityAPI.init(this);
+		},
 		tick(){
 			if(this.data.energy >= 3){
 				this.data.energy-=3;
 				this.data.aspect+=1;
 			}
-			SingularityAPI.transfersBlock(this, World.getTileEntity(this.data.pos.x, this.data.pos.y, this.data.pos.z, this.blockSource), 1, base_transfer);
+
+			SingularityAPI.transfers(this, 2, base_transfer);
 		},
 		energyReceive(type, amount, voltage) {
 			let maxVoltage = 32;
@@ -90,7 +96,7 @@ ModAPI.addAPICallback("ICore", function(api){
 			return add;
 		},
 		click(id, count, data, coords, player){
-			this.data.pos = SingularityAPI.itemUse(player, Entity.getCarriedItem(player), BlockID.singularity_extract, 10, coords, true);
+			SingularityAPI.click(this, coords, player);
 		}
 	});
 		ICRender.getGroup("ic-wire").add(BlockID.aw_generator_aspect, -1);

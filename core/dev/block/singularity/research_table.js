@@ -15,7 +15,7 @@ let ResearchTableUI = createUI({
     "textScrutiny": {type: "text", x: 640, y: 295, text: "", font: {color: android.graphics.Color.rgb(0, 0, 0), size: 25}}
 	}
 });
-SingularityAPI.setBlockOutputName(BlockID.research_table, "output", true);
+SingularityAPI.setBlockInputName(BlockID.research_table, "base", true);
 TileEntity.registerPrototype(BlockID.research_table, {
     useNetworkItemContainer: true,
     defaultValues: {

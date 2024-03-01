@@ -1,0 +1,19 @@
+{
+	//ошибки парсинга команды 
+	"aw.command.invalid_value": "Не допустимое значение",
+	"aw.command.invalid_type": "Тип {name} не допустим",
+	"aw.command.invalid_number": "Не верный тип числа",
+	"aw.command.mob_not_found": "Моб не найден",
+	"aw.command.mobs_not_found": "Мобы не найдены",
+	"aw.command.not_allowed_mobs": "Не допустимое количество мобов",
+	"aw.command.not_enough_arguments": "Не достаточно аргументов",
+	
+	
+	//описания
+	"aw.command.description.aw_help": "показывает все команды",
+	"aw.command.description.aw_stats": "dev: установить класс developer, new: удалить класс",
+	"aw.command.description.scrutiny_save": "отключить/включить сохранения изучений",
+	
+	//успешно выполненные команды
+	"aw.command.successfully": "Команда успешно выполнена"
+}

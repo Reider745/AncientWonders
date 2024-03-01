@@ -57,7 +57,9 @@ World.setBlock(coords.x, coords.y+1, coords.z, BlockID.enchantment_forest_flower
 			Structure.setStructure("enchanted_forest_wood_"+random.nextInt(8), pos.x, pos.y, pos.z, BlockSource.getCurrentWorldGenRegion());
 	}
 });
-Network.addServerPacket("test", function(p){
+
+//это не должно было войти в релиз
+/*Network.addServerPacket("test", function(p){
 	const size = 1024;
 	const seed = Math.floor(Math.random()*10000);
 	alert("start, size: "+size+", seed: "+seed)
@@ -84,7 +86,7 @@ Callback.addCallback("NativeCommand", function(str){
 	Network.sendToServer("test", {
 		size: cmd[1]
 	})
-});
+});*/
 
 
 Callback.addCallback("GenerateBiomeMap", function(chunkX, chunkZ, random, dimensionId, chunkSeed, worldSeed, dimensionSeed){
@@ -92,11 +94,9 @@ Callback.addCallback("GenerateBiomeMap", function(chunkX, chunkZ, random, dimens
 		return;
 	let X = Math.floor(chunkX) * 16;
 	let Z = Math.floor(chunkZ) * 16;
-//Debug.m("x: "+X+", z: "+Z+", perlin: "+GenerationUtils.getPerlinNoise(X, 0, Z, dimensionSeed, 1/1512, 3));
+
 	let biome = World.getBiomeMap(X, Z);
-	if(biomes.indexOf(biome) != -1)
-		return;
-	if(GenerationUtils.getPerlinNoise(X, 0, Z, dimensionSeed, 1/1512, 3) < .75)
+	if(biomes.indexOf(biome) != -1 || GenerationUtils.getPerlinNoise(X, 0, Z, dimensionSeed, 1/1512, 3) < .75)
 		return;
 	for(let x = 0; x < 16; x++)
 		for(let z = 0; z < 16; z++)

@@ -21,7 +21,7 @@ let CloneScrollUI = createUI({
 		"text":{type:"text", x: 180, y: 170, text: "", multiline: true, font: {size: 15, color: android.graphics.Color.rgb(0, 0, 0)}}
 	}
 });
-SingularityAPI.setBlockOutputName(BlockID.clone_scroll, "output", true);
+SingularityAPI.setBlockInputName(BlockID.clone_scroll, "base", true);
 
 let CloneScrollRecipe = {
 	recipes: {},

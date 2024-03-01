@@ -29,6 +29,10 @@ function Wand(id, texture, meta){
 		this.time = time;
 		return this;
 	}
+	this.setScrollMax = function(max){
+		obj.scroll_max = max;
+		return this;
+	}
 	this.register = function(){
 		Wands.addStick(this);
 		return this;

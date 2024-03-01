@@ -13,7 +13,7 @@ let MagicCrusherUI = createUI({
 });
 
 MagicCore.setPlaceBlockFunc(BlockID.magic_crusher, null, null, {tab: "singularity", name: "magic_crusher"});
-SingularityAPI.setBlockOutputName(BlockID.magic_crusher, "output", true);
+SingularityAPI.setBlockInputName(BlockID.magic_crusher, "base", true);
 crusher.setBlockModel(BlockID.magic_crusher);
 
 let MagicCrusher = {

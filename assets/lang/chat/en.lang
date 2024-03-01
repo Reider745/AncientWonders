@@ -1,0 +1,28 @@
+{
+	"aw.message.entrance": "§2 Thank you for downloading the Ancient wonders mod! \n§3 In the VKontakte group you will be able to follow the development of the mod - https://vk.com/club186544580",
+	"aw.message.required_parameter": "Required {name} {level}",
+	"aw.message.required_level": "Requires {name} level {level}",
+	"aw.message.give_study": "It is necessary to study {scrutiny}",
+	"aw.message.parameter_update": "§2 Parameter: {name} has been improved to {value}, now it is of the {new} level",
+	"aw.message.cannot_class": "§4 You cannot change the class",
+	"aw.message.parameter_noy_update": "§4 Parameter: {name} of the maximum level",
+	"aw.message.have_class": "§4 You don't have a class",
+	"aw.message.wand": "Requires {name} {value} for the spell {scroll}",
+	"aw.message.wand.not_compatible_with": "{event} is not compatible with {scroll}",
+	"aw.message.use_empty": "You can't use an empty spell",
+	"aw.message.need_study": "It is necessary to study {name}",
+	"aw.tip_message.staff_singularity": "Block selected",
+	"aw.tip_message.binding_staff_singularity": "§2 The block is linked",
+	"aw.tip_message.binding_staff_singularity_error": "§4 The distance is too long, for this block the maximum is {value}",
+	"aw.message.ritualAspect500": "This ritual requires at least 500 Skill Points",
+	"aw.message.ritualMagic30": "For this ritual, you need at least level 30 magic",
+	"aw.message.selected_class": "§2 You have chosen the class: {name}",
+	"aw.message.scrutiny_all": "You have studied everything",
+	"aw.message.scrutiny": "You have studied: {name}",
+	"aw.message.scrutiny_give_noy": "You can't study: {name}",
+	"aw.message.sroll.kill": "to kill this mob, you need {aspects} aspects",
+	"aw.message.player_dead_1": "Player {name} is bewitched to death",
+	"aw.message.player_dead_2": "Player {name} killed by forbidden spell",
+	
+	"aw.message.scroll_max": "This wand is already filled with scrolls"
+}

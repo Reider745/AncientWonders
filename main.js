@@ -2,7 +2,7 @@
 BUILD INFO:
   dir: core/dev
   target: main.js
-  files: 81
+  files: 86
 */
 
 
@@ -26,27 +26,97 @@ function readJson(path){
 	return JSON.parse(comment(FileTools.ReadText(path)));
 }
 
+let DefaultHttpClient = org.apache.http.impl.client.DefaultHttpClient;
+let HttpGet = 
+org.apache.http.client.methods.HttpGet;
+let ByteArrayOutputStream = java.io.ByteArrayOutputStream;
+let HttpStatus = org.apache.http.HttpStatus;
+//let Base64 = java.util.Base64;
+let Base64 = android.util.Base64;
+let Jstring = java.lang.String;
+
+function isConnection(){
+	let cm = UI.getContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
+	let netInfo = cm.getActiveNetworkInfo();
+	return netInfo != null && netInfo.isConnectedOrConnecting()
+}
+
+function sendHttp(http){
+	if(!isConnection()) return null;
+	try{
+		let httpclient = new DefaultHttpClient();
+		let response = httpclient.execute(new HttpGet(http));
+		let statusLine = response.getStatusLine();
+		if(statusLine.getStatusCode() == HttpStatus.SC_OK){
+			let out = new ByteArrayOutputStream(); 
+			response.getEntity().writeTo(out);
+			let result = String(out.toString());
+			out.close(); 
+			return result
+		}
+		response.getEntity().getContent().close();
+	}catch(e){return null;}
+	return null;
+}
+
 const TranslationLoad = {
-	load(path, defaultLang){
+	loadJson(lang, translations, json){
+		for(let key in json){
+			let translate = json[key];
+			let all_translate = translations[key] || {};
+			all_translate[lang] = translate;
+			translations[key] = all_translate;
+		}
+	},
+	
+	auto_translate: true,
+	
+	yandexTranslate(lang, text){
+		return "";
+		//return sendHttp("https://translate.yandex.net/api/v1.5/tr.json/translate?key=<API-ключ>&text="+text+"&lang=ru-"+lang+"&options=1").text
+	},
+	
+	load(path, defaultLang, type){
 		let translations =  {};
 		let files = FileTools.GetListOfFiles(path, "lang");
-		
-		for(let i in files){
-			let file = readJson(files[i]);
-			for(let key in file.translations){
-				let translate = file.translations[key];
-				let all_translate = translations[key] || {};
-				all_translate[file.type] = translate;
-				translations[key] = all_translate;
-			}
+		switch(type){
+			case 0:
+				for(let i in files){
+					let file = readJson(files[i]);
+					TranslationLoad.loadJson(
+						file.type, 
+						translations, 
+						file.translations
+					);
+				}
+			break;
+			case 1:
+				for(let i in files){
+					let path = String(files[i]);
+					let file = readJson(path);
+					TranslationLoad.loadJson(
+						path.split("/").pop().split(".")[0],
+						translations,
+						file
+					);
+				}
+			break;
 		}
+		
 		
 		function reload(){
 			let current = Translation.getLanguage();
 			for(let key in translations){
-				let all_translate = translations[key];
-				all_translate[current] = all_translate[current] || all_translate[defaultLang];
-				Translation.addTranslation(key, all_translate);
+				if(TranslationLoad.auto_translate){
+					let all_translate = translations[key];
+					if(all_translate[current]==undefined)
+						all_translate[current] = "";
+					Translation.addTranslation(key, all_translate);
+				}else{
+					let all_translate = translations[key];
+					all_translate[current] = all_translate[current] || all_translate[defaultLang];
+					Translation.addTranslation(key, all_translate);
+				}
 			}
 		}
 		
@@ -73,8 +143,13 @@ const TranslationLoad = {
 		return str.get();
 	},
 };
-TranslationLoad.load(__dir__+"assets/lang", "en");
-TranslationLoad.load(__dir__+"assets/lang/potions", "en");
+function translate(key, arr){
+	return TranslationLoad.get(key, arr||[]);
+}
+TranslationLoad.load(__dir__+"assets/lang", "en", 0);
+TranslationLoad.load(__dir__+"assets/lang/potions", "en", 0);
+TranslationLoad.load(__dir__+"assets/lang/command", "en", 1);
+TranslationLoad.load(__dir__+"assets/lang/chat", "en", 1);
 
 
 
@@ -801,7 +876,7 @@ Callback.addCallback("ItemUse", function(coords,item,block,isExter,player){
 
 
 
-// file: info.js
+// file: header.js
 
 IMPORT("ToolLib");
 IMPORT("SoundLib");
@@ -809,7 +884,19 @@ IMPORT("StorageInterface");
 IMPORT("ItemAnimHelper");
 IMPORT("RenderUtil");
 IMPORT("ParticlesCore");
-IMPORT("BookHelper")
+IMPORT("BookHelper");
+
+//Данный метод в хорике всегда возвращает false, на сервере true
+/*
+Вырезанный контент на сервере
+
+команды
+мобы, боссы
+не сгораемый и не взрываемая коса
+*/
+Game.isDedicatedServer = Game.isDedicatedServer || function(){
+	return false;
+};
 
 const Bitmap = android.graphics.Bitmap;
 const Color = android.graphics.Color;
@@ -1051,11 +1138,6 @@ function createUI(obj){
 	});
 }
 
-var SingularityAPIJava = WRAP_JAVA("com.reider.aw.SingularityAPI");
-SingularityAPIJava = new SingularityAPIJava();
-var Optimization = WRAP_JAVA("com.reider.aw.Optimization");
-Optimization = new Optimization();
-
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -1077,7 +1159,16 @@ function playAnimation(player, anim, time){
 }
 
 var PlayerModule = WRAP_NATIVE("PlayerModule");
-var ItemModule = WRAP_NATIVE("ItemModule");
+if(!Game.isDedicatedServer())
+	var ItemModule = WRAP_NATIVE("ItemModule");
+else
+	var ItemModule = {
+		setFireResistant(id, value){},
+		setExplodable(id, value){},
+		getArmorValue(id){
+			return 0;
+		}
+	};
 
 Network.addClientPacket("Player.animation.aw", function(name){
     PlayerModule.startSpinAttack();
@@ -3473,6 +3564,8 @@ let Potion = {
 
 // file: core/WandAPI.js
 
+let players_use_wand = {};
+
 var Wands = {
 	//var
 	stick: {},
@@ -3493,6 +3586,7 @@ var Wands = {
     obj.scrutiny.tab = obj.scrutiny.tab || "basics";
     obj.scrutiny.window = obj.scrutiny.window || "aw";
     obj.use = obj.use || function(){};
+    obj.scroll_max = obj.scroll_max || 1;
     this.stick[obj.id] = obj;
     Item.setToolRender(obj.id, true);
     Item.setMaxUseDuration(obj.id, obj.time);
@@ -3571,6 +3665,10 @@ var Wands = {
 			let extra = item.extra || new ItemExtraData();
 			let wand = Wands.getStick(item.id);
 			if(wand.scrutiny.enable || ScrutinyAPI.isScrutiny(player, wand.scrutiny.window, wand.scrutiny.tab, wand.scrutiny.name)){
+
+				if(players_use_wand[player])
+					return;
+				
 				let event = Wands.getPrototype(extra.getInt("event", 0));
 				if(event.event!= name)
 					return;
@@ -3580,10 +3678,13 @@ var Wands = {
         }else if(wand.sound){
         	playSound(wand.sound, player, 16);
         }
+        
+        players_use_wand[player] = true;
+        
         let spells = Wands.getArrByExtra(extra);
         if(wand.startUsing)
         	wand.startUsing(packet);
-        for(let i in spells){
+        for(let i = 0;i < Math.min(spells.length,wand.scroll_max);i++){
         	if(Wands.isCompatibility(extra.getInt("event", 0), spells[i].id)){
         			
         		let prot = Wands.getPrototype(spells[i].id);
@@ -3632,6 +3733,8 @@ var Wands = {
         if(spells.length == 0){
         	PlayerAC.message(player, Translation.translate("aw.message.use_empty"));
         }
+        
+        delete players_use_wand[player];
 			}else{
       	PlayerAC.message(player, TranslationLoad.get("aw.message.need_study", [["name", wand.scrutiny.name]]));
 			}
@@ -3640,6 +3743,7 @@ var Wands = {
 			alert(e)
 			Logger.LogError(e);
 			Logger.Flush();
+			delete players_use_wand[player];
 		}
 		});
 	},
@@ -4023,6 +4127,10 @@ function Wand(id, texture, meta){
 		this.time = time;
 		return this;
 	}
+	this.setScrollMax = function(max){
+		obj.scroll_max = max;
+		return this;
+	}
 	this.register = function(){
 		Wands.addStick(this);
 		return this;
@@ -4249,25 +4357,243 @@ var RitualAPI = {
 
 // file: core/SingularityAPI.js
 
-const base_transfer = function(output, tile){
-	if(World.getThreadTime() % 20 == 0)
-		ParticlesAPI.spawnLine(ParticlesAPI.part2, tile.x, tile.y, tile.z, output.x, output.y, output.z, 15, tile.dimension);
+function angleFor2dVector(x1, y1, x2, y2){
+	let v = Math.acos((x1*x2+y1*y2) / (Math.sqrt(x1 * x1 + y1 * y1)*Math.sqrt(x2 * x2 + y2 * y2)))
+	return isNaN(v) ? 0 : v;
 }
-var SingularityAPI = {
-	getOutputBlock: function(name, x, y, z, r, region, noyblock){
-		noyblock = noyblock || [];
-		return SingularityAPIJava.getOutputBlock(name,x,y,z,r,region, noyblock);
+
+function angleFor3dVector(x1, y1, z1, x2, y2, z2){
+	let v = Math.acos((x1*x2+y1*y2+z1*z2) / (Math.sqrt(x1 * x1 + y1 * y1 + z1 * z1)*Math.sqrt(x2 * x2 + y2 * y2 + z2 * z2)));
+	return isNaN(v) ? 0 : v;
+}
+
+//r - радиус
+//i - индекс
+//n - количество точек
+
+function getPosPolygon(r, i, n){
+	let fraction = (2 * Math.PI * i) / n;
+	return {
+		x: r * Math.cos(fraction),
+		y: r * Math.sin(fraction)
+	}
+}
+
+const step = 30;
+const polygon_count = 20;
+
+const points_polygon = (function(){
+	let points = [];
+		
+	for(let p = 0;p <= polygon_count;p++)
+		points.push(getPosPolygon(.05, p, polygon_count));
+		
+	return points;
+})();
+const index_pre = polygon_count-1;
+
+function buildLineMesh(x1, y1, z1, x2, y2, z2){
+	const mesh = new RenderMesh();
+	
+	const dx = x2-x1;
+	const dy = y2-y1;
+	const dz = z2-z1;
+	
+	const radius = Math.sqrt(dx * dx + dy * dy + dz * dz);
+	
+	const move = radius/step;
+	let vz = 0;
+	
+	for(let i = 0;i < step;i++){
+		let post = vz + move;
+		
+		let pos = points_polygon[0];
+		mesh.addVertex(pos.x, pos.y, vz);
+		mesh.addVertex(pos.x, pos.y, post);
+		
+		for(let p = 1;p < polygon_count;p++){
+			let pos = points_polygon[p];
+			
+			mesh.addVertex(pos.x, pos.y, vz);
+			mesh.addVertex(pos.x, pos.y, post);
+			
+			if((p+1) % 2 == 0){
+				mesh.addVertex(pos.x, pos.y, vz);
+				pos = points_polygon[p-1];
+				mesh.addVertex(pos.x, pos.y, post);
+			}else{
+				let pre_pos = points_polygon[p-1];
+				mesh.addVertex(pre_pos.x, pre_pos.y, vz);
+					
+				mesh.addVertex(pre_pos.x, pre_pos.y, vz);
+				mesh.addVertex(pre_pos.x, pre_pos.y, post);
+				mesh.addVertex(pos.x, pos.y, post);
+				
+				mesh.addVertex(pos.x, pos.y, vz);
+				mesh.addVertex(pos.x, pos.y, post);
+			}
+		}
+		
+		let pre_pos = points_polygon[index_pre];
+		pos = points_polygon[polygon_count];
+		
+		mesh.addVertex(pos.x, pos.y, vz);
+		mesh.addVertex(pos.x, pos.y, post);
+		mesh.addVertex(pre_pos.x, pre_pos.y, vz);
+					
+		mesh.addVertex(pre_pos.x, pre_pos.y, vz);
+		mesh.addVertex(pre_pos.x, pre_pos.y, post);
+		mesh.addVertex(pos.x, pos.y, post);
+		
+		vz = post;
+	}
+	
+	const angleXZ = angleFor2dVector(0, radius, dx, dz);
+	
+	if(dx == 0 && dz == 0)
+		var angleY = Math.PI/2;
+	else
+		var angleY = angleFor3dVector(dx, 0, dz, dx, dy, dz);
+	
+	mesh.rotate(0 < y2-y1 ? -angleY : angleY, 0 < x2-x1 ? -angleXZ : angleXZ, 0);
+	mesh.translate(x1, y1, z1);
+	
+	return mesh;
+}
+
+let SingularityLines = {
+	lines: {},
+	
+	buildKey(x1, y1, z1, x2, y2, z2){
+		return x1+":"+y1+":"+z1+":"+x2+":"+y2+":"+z2;
 	},
-	getInputBlock: function(name, x, y, z, r, region, noyblock){
-		noyblock = noyblock || [];
-		return SingularityAPIJava.getInputBlock(name,x,y,z,r,region, noyblock);
+	
+	add(x1, y1, z1, x2, y2, z2){
+		let key = this.buildKey(x1-.5, y1-.5, z1-.5, x2-.5, y2-.5, z2-.5);
+		let obj = {visibility: false, mesh: buildLineMesh(x1, y1, z1, x2, y2, z2), key: key}
+		this.lines[key] = obj;
+		return obj;
 	},
+	
+	can(key){
+		return !!this.lines[key];
+	},
+	
+	remove(key){
+		delete this.lines[key];
+	},
+	
+	setVisibility(key, value){
+		if(this.lines[key])
+			this.lines[key].visibility = value;
+	},
+	
+	animation: new Animation.Base(0, 0, 0),
+	mesh: new RenderMesh(),
+	
+	update(){ 
+		this.mesh.clear();
+		let i = 0;
+		for(let key in this.lines){
+			let obj = this.lines[key];
+			if(obj.visibility){
+				this.mesh.addMesh(obj.mesh, 0, 0, 0);
+				i++;
+			}
+		}
+		this.animation.describe({
+			mesh: this.mesh,
+			material: "aspects_transfer_aw"
+		});
+		
+		this.animation.load();
+	},
+	Client(){
+		let lines = [];
+		let lines_ = {};
+		
+		this.events = {
+			addLine(data){
+				let line = SingularityLines.add(this.x+.5, this.y+.5, this.z+.5, data.x+.5, data.y+.5, data.z+.5);
+				lines.push(line);
+				lines_[line.key] = line;
+			},
+			visibility(data){
+				for(let i in data.lines){
+					let pos = data.lines[i];
+					lines_[SingularityLines.buildKey(this.x, this.y, this.z, pos.x, pos.y, pos.z)].visibility = data.status;
+				}
+				SingularityLines.update();
+			}
+		}
+		
+		this.unload = function(){
+			for(let i in lines)
+				SingularityLines.remove(lines[i].key);
+		}
+	},
+	
+	addLineForTile(tile, x, y, z){
+		tile.networkEntity.send("addLine", {x: x, y: y, z: z});
+	},
+	
+	visibilityLineForTile(tile, lines){
+		tile.networkEntity.send("visibility", {lines: lines, status: true});
+	},
+	
+	hidenLineForTile(tile, lines){
+		tile.networkEntity.send("visibility", {lines: lines, status: false});
+	}
+};
+
+/*let coords_item_use = [0, 0, 0];
+let first = true;
+let animation_ = new Animation.Base(0, 0, 0);
+
+Callback.addCallback("ItemUse", function(coords, item, block, is, player){
+	if(item.id != 263) return;
+	
+	if(first){
+		coords_item_use = coords;
+		first = false;
+	}else{
+		let mesh = buildLineMesh(coords_item_use.x+.5, coords_item_use.y+.5, coords_item_use.z+.5, coords.x+.5, coords.y+.5, coords.z+.5);
+		
+		animation_.describe({
+			mesh: mesh,
+			material: "aspects_transfer_aw"
+		});
+		animation_.load();
+		
+		first = true;
+	}
+});*/
+
+const base_transfer = function(output, tile){
+//	let angle = Entity.get
+	//if(World.getThreadTime() % 20 == 0)
+		//ParticlesAPI.spawnLine(ParticlesAPI.part2, tile.x, tile.y, tile.z, output.x, output.y, output.z, 15, tile.dimension);
+}
+let SingularityAPI = {
+	input: {},
+	output: {},
+	
 	setBlockInputName: function(id, name, bool){
-		SingularityAPIJava.setBlockInputName(id, name, bool)
+		this.input[name] = this.input[name] || {};
+		this.input[name][id] = bool;
 	},
 	setBlockOutputName: function(id, name, bool){
-		SingularityAPIJava.setBlockOutputName(id, name, bool);
+		this.output[name] = this.output[name] || {};
+		this.output[name][id] = bool;
 	},
+	
+	isInputs(name, id){
+		return this.input[name] && this.input[name][id];
+	},
+	isOutputs(name, id){
+		return this.output[name] && this.output[name][id];
+	},
+	
 	getTiles(arr, region){
 		let tiles = [];
 		for(let i in arr){
@@ -4278,48 +4604,85 @@ var SingularityAPI = {
 		return tiles;
 	},
 	transfersBlock(tile, tiles, value, func){
-		if(tile.data.aspect - value <= 0) return;
-		if(tiles) if(tiles.blockSource) if(tiles.data.aspect+value<=tiles.data.aspectMax){
+		if(tile.data.aspect - value > 0 && tiles && tiles.blockSource && tiles.data.aspect+value <= tiles.data.aspectMax){
 			tile.data.aspect-=value;
 			tiles.data.aspect+=value;
-			func(tiles, tile)
+			
+			func(tiles, tile);
+			return true;
+		}
+		return false;
+	},
+	
+	init(tile){
+		let arr = tile.data.arr || [];
+		for(let i in arr){
+			let pos = arr[i];
+			SingularityLines.addLineForTile(tile, pos.x, pos.y, pos.z);
+		}
+	}, 
+	
+	transfers(tile, value, func){
+		let arr = tile.data.arr || [];
+		value /= arr.length;
+		
+		let visilibity = [];
+		let hiden = [];
+		
+		for(let i in arr){
+			let pos = arr[i];
+			
+			if(this.transfersBlock(tile, World.getTileEntity(pos.x, pos.y, pos.z, tile.blockSource), value, func))
+				visilibity.push(pos);
+			else
+				hiden.push(pos);
+		}
+		
+		if(World.getThreadTime() % 20 == 0){
+			SingularityLines.visibilityLineForTile(tile, visilibity);
+			SingularityLines.hidenLineForTile(tile, hiden);
 		}
 	},
-	transfers(tile, tiles, value, func){
-		for(let i in tiles){
-			if(tile.data.aspect - value <= 0) return;
-			if(tiles[i]) if(tiles[i].blockSource) if(tiles[i].data.aspect+value<=tiles[i].data.aspectMax){
-				tile.data.aspect-=value;
-				tiles[i].data.aspect+=value;
-				func(tiles[i], tile)
-			} 
+	
+	click(tile, coords, player){
+		tile.data.arr = tile.data.arr || []
+		let pos = SingularityAPI.itemUse(player, Entity.getCarriedItem(player), tile.blockID, 3, coords, true);
+		if(!pos) 
+			return;
+			
+		for(let i in tile.data.arr){
+			let pos_ = tile.data.arr[i];
+			if(pos_.x == pos.x && pos_.y == pos.y && pos_.z == pos.z)
+				return;
 		}
+		
+		SingularityLines.addLineForTile(tile, pos.x, pos.y, pos.z);
+		tile.data.arr.push(pos);
 	},
+	
 	getDistante(p1, p2){
-		return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2) + Math.pow(p1.z - p2.z, 2));
+		return Math.sqrt(Math.pow(p1.x+.5 - p2.x+.5, 2) + Math.pow(p1.y+.5 - p2.y+.5, 2) + Math.pow(p1.z+.5 - p2.z+.5, 2));
 	},
+	
 	itemUse(player, item, block, count, coords, bool){
 		bool = bool || false;
-		if(Entity.getSneaking(player)&&item.id==ItemID.staff_singularity&&SingularityAPIJava.isInputs("output",block)){
+		let region = BlockSource.getDefaultForActor(player);
+		if(!Entity.getSneaking(player) && item.id == ItemID.staff_singularity && this.isOutputs("base", block)){
 			item.extra = item.extra || new ItemExtraData();
 			let pos = {
 				x: item.extra.getInt("x", 0),
 				y: item.extra.getInt("y", 0),
 				z: item.extra.getInt("z", 0)
 			};
-			if(this.getDistante(pos, coords) > count){
-				Mp.tipMessage(player, Translation.translate("aw.tip_message.binding_staff_singularity_error")+count)
-				return {x:0,y:0,z:0};
+			if(this.getDistante(pos, coords) > count || !this.isInputs("base", region.getBlockId(pos.x, pos.y, pos.z))){
+				Mp.tipMessage(player, TranslationLoad.get("aw.tip_message.binding_staff_singularity_error", [["value", count]]));
+				return null;
 			}
 			if(bool)
 				Mp.tipMessage(player, Translation.translate("aw.tip_message.binding_staff_singularity"))
 			return pos;
 		}
-		return {
-			x: 0,
-			y: 0,
-			z: 0
-		};
+		return null;
 	}
 };
 
@@ -4443,24 +4806,39 @@ let ProjectTile = {
 				duration: duration
 			});
 			let posEnd;
-			let animation = createAnimation(duration, function(v, anim){
-				let pos = {
-					x: x+(ax*v),
-					y: y+(ay*v),
-					z: z+(az*v)
-				};
-				if(!region.isChunkLoadedAt(pos.x, pos.z)){
-					anim.cancel();
-					return;
-				}
-				posEnd = pos;
-				if(!World.canTileBeReplaced(region.getBlockId(pos.x,pos.y,pos.z), region.getBlockData(pos.x,pos.y,pos.z)))
-					anim.cancel();
-				func(region, pos, player, anim, v);
-			});
-			animation.addListener({
-				onAnimationEnd(){
-					endServer(region, player, posEnd, animation);
+			let time_tick = duration / 1000 * 20;
+			Updatable.addUpdatable({
+				tick: 0,
+				cancel(){
+					this.remove = true;
+					endServer(region, player, posEnd, this);
+				},
+				update(){
+					if(this.tick <= time_tick){
+						let v = this.tick / time_tick;
+						let pos = {
+							x: x+(ax*v),
+							y: y+(ay*v),
+							z: z+(az*v)
+						};
+						if(!region.isChunkLoadedAt(pos.x, pos.z)){
+							this.remove = true;
+							endServer(region, player, posEnd, this);
+							return;
+						}
+						posEnd = pos;
+						if(!World.canTileBeReplaced(region.getBlockId(pos.x,pos.y,pos.z), region.getBlockData(pos.x,pos.y,pos.z))){
+							this.remove = true;
+							endServer(region, player, posEnd, this);
+							return;
+						}
+						func(region, pos, player, this, v);
+						
+						this.tick++;
+					}else{
+						this.remove = true;
+						endServer(region, player, posEnd, this);
+					}
 				}
 			});
 		}
@@ -4469,43 +4847,34 @@ let ProjectTile = {
 			ay = ay;
 			az = az;
 			part = typeof part == "number" ? part : ParticlesStorage.get(part);
-		//	alert("1")
 			let emitter = new Particles.ParticleEmitter(x, y, z);
-			//alert("2")
 			emitter.setEmitRelatively(true);
-			//alert("3")
 			emitter.emit(part, 0, 0, 0, 0);
-		//	alert("4")
+			
 			let posEnd;
 			let region = BlockSource.getCurrentClientRegion();
-			//alert("5")
 			let player = Player.get();
-		//	alert("6")
+			
 			let animation = createAnimation(duration, function(v, anim){
-			//	alert("7")
 				let pos = {
 					x: x+(ax*v),
 					y: y+(ay*v),
 					z: z+(az*v)
 				};
-				//alert("8")
 				if(!region.isChunkLoadedAt(pos.x, pos.z)){
 					anim.cancel();
 					return;
 				}
-				//alert("9")
 				posEnd = pos;
 				emitter.moveTo(pos.x,pos.y,pos.z);
-				//alert("10")
 				if(!World.canTileBeReplaced(region.getBlockId(pos.x,pos.y,pos.z), region.getBlockData(pos.x,pos.y,pos.z)))
 					anim.cancel();
-			//	alert("11");
 				clientFunc(region, pos, player, anim, v);
-				//alert("12")
 			});
 			animation.addListener({
 				onAnimationEnd(){
 					endClient(region, player, posEnd, animation);
+					emitter.release();
 				}
 			});
 		}
@@ -4529,6 +4898,7 @@ let ProjectTileFire = new ProjectTile.create("fire")
 		ProjectTile.damageToProjectTile(pos, player, "magic", 8, 1);
 	});
 
+
 let ProjectTileStarfall = new ProjectTile.create("starfall")
 	.setServerLogic(function(region, pos, player){
 		ProjectTile.damageToProjectTile(pos, player, "magic", 10);
@@ -4540,6 +4910,8 @@ let ProjectTileStarfall = new ProjectTile.create("starfall")
 		for(let i = 0;i < 14;i++)
 			ParticlesAPI.spawnCircleClient(ParticlesType.part2, pos.x, pos.y+(0.2*i)+1, pos.z, i / 1.3, 11 * i, 2);
 	});
+
+
 let ProjectTileSnow_1 = new ProjectTile.create("snow_1")
 	.setServerLogic(function(region, pos, player){
 		ProjectTile.damageToProjectTile(pos, player, "magic", 20, 1.5, function(ent){
@@ -4552,13 +4924,17 @@ let ProjectTileSnow_1 = new ProjectTile.create("snow_1")
 		Particles.addParticle(ParticlesType.snow, pos.x+(Math.random()-Math.random()), pos.y+(Math.random()-Math.random()), pos.z+(Math.random()-Math.random()), 0, 0, 0);
 	});
 
+
 let BOOM = new ProjectTile.create("boom")
-	.setServerLogic(function(){
+	.setServerLogic(function(region, pos, player){
 		ProjectTile.damageToProjectTile(pos, player, "magic", 4);
 	})
 	.setClientLogic(function(region, pos){
 		Particles.addParticle(ParticlesType.project, pos.x+(Math.random()-Math.random()), pos.y+(Math.random()-Math.random()), pos.z+(Math.random()-Math.random()), 0, 0, 0);
 	});
+	
+	
+	
 function spawnPizdes(pos, region, player){
 	let count = Math.floor(Math.random()*15)+15;
 	for(let i = 0;i < count;i++){
@@ -4566,7 +4942,7 @@ function spawnPizdes(pos, region, player){
 	}
 }
 let ProjectTileFireBoom = new ProjectTile.create("fire_boom")
-	.setServerLogic(function(region, pos, player, anim){
+	.setServerLogic(function(region, pos, player, anim){ 
 		ProjectTile.damageToProjectTile(pos, player, "magic", 5, 1.5, function(ent){
 			anim.cancel();
 		});
@@ -4843,7 +5219,7 @@ IDRegistry.genItemID("staff_singularity");
 Item.createItem("staff_singularity", "aw.item.staff_singularity", {name: "singularity", meta: 0}, {stack: 1});
 IAHelper.makeAdvancedAnim(ItemID.staff_singularity, "singularity", 1, [0, 1, 2, 3]);
 Callback.addCallback("ItemUse", function(coords, item, block, isExter, player){
-	if(!Entity.getSneaking(player)&&item.id==ItemID.staff_singularity){
+	if(Entity.getSneaking(player) && item.id==ItemID.staff_singularity){
 		item.extra = item.extra || new ItemExtraData()
 		item.extra.putInt("x", coords.x);
 		item.extra.putInt("y", coords.y);
@@ -5932,12 +6308,12 @@ decor.addType("itemUse", function(packet){
 
 // file: items/MagicWand.js
 
-if(__config__.getBool("debug.enabled")){
 IDRegistry.genItemID("awDebugWand"); 
 Item.createItem("awDebugWand", "debug wand", {name: "stick", meta: 0}, {stack: 1});
 Wands.addStick({
     id: ItemID.awDebugWand,
     time: 5,
+    scroll_max: 9999,
     texture: {
         name: "stick"
     },
@@ -5948,10 +6324,11 @@ Wands.addStick({
         aspects: 99999999
     }
 });
-}
+
 Wands.addStick({
     id: ItemID.magis_stick, 
     time: 20,
+    scroll_max: 2,
     sound: "magic_1",
     scrutiny: {
         name: "magisStick"
@@ -5965,6 +6342,7 @@ Wands.addStick({
     id: ItemID.acolyteStaff,
     time: 30,
     sound: "magic_0",
+    scroll_max: 1,
     scrutiny: {
         name: "acolyteStaff"
     },
@@ -5981,6 +6359,7 @@ Wands.addStick({
 Wands.addStick({
     id: ItemID.magis_sword,
     time: 30,
+    scroll_max: 2,
     sound: "magic_2",
     scrutiny: {
         name: "magisSword"
@@ -5999,6 +6378,7 @@ MagicCore.setUsingItem({id: ItemID.magis_sword, data: 0}, "protection", 35);
 Wands.addStick({
     id: ItemID.magis_pocox,
     time: 20,
+    scroll_max: 2,
     sound: "magic_3",
     scrutiny: {
         name: "magisPocox"
@@ -6017,6 +6397,7 @@ Wands.addStick({
 Wands.addStick({
     id: ItemID.aw_dead,
     time: 30,
+    scroll_max: 6,
     sound: "magic_4",
     scrutiny: {
     	name: "dead",
@@ -6038,6 +6419,7 @@ MagicCore.setUsingItem({id: ItemID.magis_pocox, data: 0}, "necromancer", 20);
 Wands.addStick({
     id: ItemID.magis_stick_2_lvl,
     time: 25,
+    scroll_max: 4,
     sound: "magic_1",
     scrutiny: {
         name: "magisStick2lvl"
@@ -6057,6 +6439,7 @@ MagicCore.setUsingItem({id: ItemID.magis_stick_2_lvl, data: 0}, "magic", 40);
 Wands.addStick({
 	id: ItemID.aw_magic_stick,
 	time: 20,
+	scroll_max: 5,
 	sound: "magic_1",
 	scrutiny: {
 		tab: "riches",
@@ -6077,6 +6460,7 @@ MagicCore.setUsingItem({id: ItemID.aw_magic_stick, data: 0}, "magic", 60);
 Wands.addStick({
     id: ItemID.magis_sword_2_lvl,
     time: 25,
+    scroll_max: 4,
     sound: "magic_2",
     scrutiny: {
         name: "magisSword2lvl"
@@ -6096,6 +6480,7 @@ MagicCore.setUsingItem({id: ItemID.magis_sword_2_lvl, data: 0}, "protection", 50
 Wands.addStick({
 	id: ItemID.aw_magic_shovel,
 	time: 20,
+	scroll_max: 5,
 	sound: "magic_2",
 	scrutiny: {
 		tab: "riches",
@@ -6116,6 +6501,7 @@ MagicCore.setUsingItem({id: ItemID.aw_magic_shovel, data: 0}, "protection", 60);
 Wands.addStick({
     id: ItemID.magis_pocox_2_lvl,
     time: 15,
+    scroll_max: 4,
     sound: "magic_3",
     texture: {
         name: "magic_staff_2_lvl"
@@ -6135,6 +6521,7 @@ MagicCore.setUsingItem({id: ItemID.magis_pocox_2_lvl, data: 0}, "necromancer", 4
 Wands.addStick({
 	id: ItemID.aw_magic_staff,
 	time: 20,
+	scroll_max: 5,
 	sound: "magic_2",
 	scrutiny: {
 		tab: "riches",
@@ -8716,13 +9103,17 @@ TileEntity.registerPrototype(BlockID.MagicConnector, {
                 if(prot.type == "event"){
                     this.blockSource.spawnDroppedItem(this.x, this.y+1,this.z, this.data.item.extra.getInt("event", 0), 1, 0, null);
                     this.data.item.extra.putInt("event", id);
-                }
-                if(prot.type == "function"){
+                }else if(prot.type == "function"){
                 	let arr = Wands.getArrByExtra(this.data.item.extra);
-                    arr.push(Entity.getCarriedItem(player))
-                   let event = this.data.item.extra.getInt("event", 0); 
-                    this.data.item.extra = Wands.getExtraByArr(arr);
-                    this.data.item.extra.putInt("event", event);
+                	if(arr.length < Wands.stick[this.data.item.id].scroll_max){
+                  	arr.push(Entity.getCarriedItem(player));
+                  	let event = this.data.item.extra.getInt("event", 0); 
+                   this.data.item.extra = Wands.getExtraByArr(arr);
+                   this.data.item.extra.putInt("event", event);
+                  }else{
+                  	PlayerAC.message(player, Translation.translate("aw.message.scroll_max"));
+                  }
+                   
                 }
                 prot.installation(player, Entity.getCarriedItem(player));
             }else{
@@ -9156,7 +9547,7 @@ let ResearchTableUI = createUI({
     "textScrutiny": {type: "text", x: 640, y: 295, text: "", font: {color: android.graphics.Color.rgb(0, 0, 0), size: 25}}
 	}
 });
-SingularityAPI.setBlockOutputName(BlockID.research_table, "output", true);
+SingularityAPI.setBlockInputName(BlockID.research_table, "base", true);
 TileEntity.registerPrototype(BlockID.research_table, {
     useNetworkItemContainer: true,
     defaultValues: {
@@ -9253,20 +9644,24 @@ TileEntity.registerPrototype(BlockID.singularity_shrinker, {
 	tick: function(){
 		StorageInterface.checkHoppers(this);
 		let slotRune = this.container.getSlot("slotRune");
+		let fuel_strength = runes_singularity[slotRune.id];
 
-		if(!!runes_singularity[""+slotRune.id]){
-			this.data.singularity+=runes_singularity[slotRune.id]*slotRune.count;
-this.container.setSlot("slotRune", 0, 0, 0, null);
+		if(fuel_strength){
+			this.data.singularity += fuel_strength*slotRune.count;
+			this.container.setSlot("slotRune", 0, 0, 0, null);
 		}
-		if(Math.random()<=.2 && this.data.singularity>=.1) this.data.singularity-=.05;
-		if(this.data.singularity>=0.1 && World.getThreadTime()% 5 == 0){
+		
+		if(Math.random() <= .2 && this.data.singularity >= .1)
+			this.data.singularity -= .05;
+			
+		if(this.data.singularity > 0 && World.getThreadTime() % 5 == 0){
 			Mp.spawnParticle(ParticlesAPI.part_singularity, this.x+.5, this.y+1.5, this.z+.5, 0, 0, 0, 0, 0, 0, this.dimension);
 			Mp.spawnParticle(ParticlesAPI.singularity_particle, this.x+Math.random(), this.y+1+Math.random(), this.z+Math.random(), 0, 1/20, 0, 0, 0, 0, this.dimension);
+			
+			this.container.setText("textSinLvl", this.data.singularity);
+			this.container.setText("textSinAspect", Math.ceil(this.data.singularity/250));
+			this.container.sendChanges();
 		}
-		if(this.data.singularity < 0) this.data.singularity = 0
-		this.container.setText("textSinLvl", this.data.singularity);
-		this.container.setText("textSinAspect", Math.ceil(this.data.singularity/250));
-		this.container.sendChanges();
 	},
 	getScreenName: function(player, coords){
 		if(ScrutinyAPI.isScrutiny(player, "aw", "basics", "singularity"))
@@ -9293,37 +9688,43 @@ RenderAPI.setSingularityExtractor(BlockID.singularity_extract);
 MagicCore.setPlaceBlockFunc(BlockID.singularity_extract, {
 	magic: 5
 });
+SingularityAPI.setBlockOutputName(BlockID.singularity_extract, "base", true);
 TileEntity.registerPrototype(BlockID.singularity_extract, {
 	defaultValues: {
 		aspect: 0,
 		aspectMax: 1000,
 		add: 1,
-		pos:{x:0,y:0,z:0}
+		arr:null
 	},
-	tick: function(){
-		if(World.getThreadTime()%__config__.get("tickUpdate")==0){
-			if(this.blockSource.getBlockId(this.x, this.y-2, this.z)==BlockID.singularity_shrinker){
+	client: new SingularityLines.Client(),
+	init(){
+		SingularityAPI.init(this);
+	},
+	tick(){
+		if(World.getThreadTime() % 5 == 0){
+			if(this.blockSource.getBlockId(this.x, this.y-2, this.z) == BlockID.singularity_shrinker){
 				let tile = World.getTileEntity(this.x, this.y-2, this.z, this.blockSource);
 				if(!tile)
-					tile = World.addTileEntity(this.x, this.y-2, this.z, this.blockSource)
-					if(this.data.aspect+Math.ceil(tile.data.singularity/500)<=this.data.aspectMax){
-							this.data.aspect+=Math.ceil(tile.data.singularity/500);
-							tile.data.singularity-=.0005*Math.ceil(tile.data.singularity/250);
-							this.data.add = Math.ceil(tile.data.singularity/250);
-					}else{
-							this.data.add = 1;
-					}
-				}else{
-					this.data.add = 1;
-				}
+					tile = World.addTileEntity(this.x, this.y-2, this.z, this.blockSource);
 				
-		SingularityAPI.transfersBlock(this, World.getTileEntity(this.data.pos.x, this.data.pos.y, this.data.pos.z, this.blockSource), this.data.add, function(output, tile){
-			ParticlesAPI.spawnLine(ParticlesAPI.part2, tile.x, tile.y, tile.z, output.x, output.y, output.z, 30, tile.dimension);
-		});
+				let add = this.data.aspect + Math.ceil(tile.data.singularity/500)
+				if(add <= this.data.aspectMax){
+					this.data.aspect+=add;
+					tile.data.singularity -= .001*add;
+							
+					if(this.data.singularity < 0) 
+						this.data.singularity = 0;
+								
+					this.data.add = Math.ceil(tile.data.singularity/250);
+				}else
+					this.data.add = 1;
+			}else
+				this.data.add = 1;
 		}
+		SingularityAPI.transfers(this, 2, base_transfer);
 	},
 	click(id, count, data, coords, player){
-		this.data.pos = SingularityAPI.itemUse(player, Entity.getCarriedItem(player), BlockID.singularity_extract, 10, coords, true);
+		SingularityAPI.click(this, coords, player);
 	}
 });
 
@@ -9336,7 +9737,8 @@ TileEntity.registerPrototype(BlockID.singularity_extract, {
 IDRegistry.genBlockID("transmitter");
 Block.createBlock("transmitter", [ {name: "aw.block.transmitter", texture: [["stone", 0]], inCreative: true} ]);
 
-SingularityAPI.setBlockOutputName(BlockID.transmitter, "output", true);
+SingularityAPI.setBlockInputName(BlockID.transmitter, "base", true);
+SingularityAPI.setBlockOutputName(BlockID.transmitter, "base", true);
 RenderAPI.setTransmitter(BlockID.transmitter);
 TileEntity.registerPrototype(BlockID.transmitter, {
 	defaultValues: {
@@ -9344,27 +9746,18 @@ TileEntity.registerPrototype(BlockID.transmitter, {
 		aspectMax: 50,
 		arr: null
 	},
+	
+	client: new SingularityLines.Client(),
 	init(){
-		if(!this.data.arr)
-		 this.data.arr = []
+		SingularityAPI.init(this);
 	},
-	tick: function(){
-		if(!this.data.arr)
-			this.data.arr = this.data.arr || [];
-		for(let i in this.data.arr)
-			SingularityAPI.transfersBlock(this, World.getTileEntity(this.data.arr[i].x, this.data.arr[i].y, this.data.arr[i].z, this.blockSource),2/this.data.arr.length,base_transfer);
+	tick(){
+		SingularityAPI.transfers(this, 2, base_transfer);
 	},
 	click(id, count, data, coords, player){
-		this.data.arr = this.data.arr || []
-		let pos = SingularityAPI.itemUse(player, Entity.getCarriedItem(player), BlockID.singularity_extract, 3, coords, true);
-		for(let i in this.data.arr)
-			if(this.data.arr[i].x == pos.x && this.data.arr[i].y == pos.y && this.data.arr[i].z == pos.z)
-				return;
-		if(pos.x != 0 && pos.y != 0 && pos.z != 0)
-			this.data.arr.push(pos);
+		SingularityAPI.click(this, coords, player);
 	}
 });
-
 
 
 
@@ -9399,7 +9792,7 @@ Callback.addCallback("DestroyBlock", function(coords, block, player){
 		BlockSource.getDefaultForActor(player).setBlock(coords.x, coords.y-1,coords.z, 0, 0)
 	}
 })
-SingularityAPI.setBlockOutputName(BlockID.ancient_bottom_obelisk, "output", true);
+SingularityAPI.setBlockInputName(BlockID.ancient_bottom_obelisk, "base", true);
 TileEntity.registerPrototype(BlockID.ancient_bottom_obelisk, {
 	defaultValues: {
 		add: 1,
@@ -9457,7 +9850,7 @@ let MagicCrusherUI = createUI({
 });
 
 MagicCore.setPlaceBlockFunc(BlockID.magic_crusher, null, null, {tab: "singularity", name: "magic_crusher"});
-SingularityAPI.setBlockOutputName(BlockID.magic_crusher, "output", true);
+SingularityAPI.setBlockInputName(BlockID.magic_crusher, "base", true);
 crusher.setBlockModel(BlockID.magic_crusher);
 
 let MagicCrusher = {
@@ -9591,7 +9984,8 @@ StorageInterface.createInterface(BlockID.magic_crusher, {
 IDRegistry.genBlockID("aw_magic_storage");
 Block.createBlock("aw_magic_storage", [ {name: "aw.block.aw_magic_storage", texture: [["stone", 0]], inCreative: true} ]);
 
-SingularityAPI.setBlockOutputName(BlockID.aw_magic_storage, "output", true);
+SingularityAPI.setBlockInputName(BlockID.aw_magic_storage, "base", true);
+SingularityAPI.setBlockOutputName(BlockID.aw_magic_storage, "base", true);
 magic_storage.setBlockModel(BlockID.aw_magic_storage);
 
 MagicCore.setPlaceBlockFunc(BlockID.aw_magic_storage, null, null, {tab: "singularity", name: "magic_storage"});
@@ -9602,24 +9996,15 @@ TileEntity.registerPrototype(BlockID.aw_magic_storage, {
 		aspectMax: 10000,
 		arr: null,
 	},
+	client: new SingularityLines.Client(),
 	init(){
-		if(!this.data.arr)
-		 this.data.arr = []
+		SingularityAPI.init(this);
 	},
-	tick: function(){
-		if(!this.data.arr)
-			this.data.arr = this.data.arr || [];
-		for(let i in this.data.arr)
-			SingularityAPI.transfersBlock(this, World.getTileEntity(this.data.arr[i].x, this.data.arr[i].y, this.data.arr[i].z, this.blockSource),2/this.data.arr.length,base_transfer);
+	tick(){
+		SingularityAPI.transfers(this, 2, base_transfer);
 	},
 	click(id, count, data, coords, player){
-		this.data.arr = this.data.arr || []
-		let pos = SingularityAPI.itemUse(player, Entity.getCarriedItem(player), BlockID.singularity_extract, 3, coords, true);
-		for(let i in this.data.arr)
-			if(this.data.arr[i].x == pos.x && this.data.arr[i].y == pos.y && this.data.arr[i].z == pos.z)
-				return;
-		if(pos.x != 0 && pos.y != 0 && pos.z != 0)
-			this.data.arr.push(pos);
+		SingularityAPI.click(this, coords, player);
 	}
 });
 
@@ -9651,7 +10036,7 @@ let CloneScrollUI = createUI({
 		"text":{type:"text", x: 180, y: 170, text: "", multiline: true, font: {size: 15, color: android.graphics.Color.rgb(0, 0, 0)}}
 	}
 });
-SingularityAPI.setBlockOutputName(BlockID.clone_scroll, "output", true);
+SingularityAPI.setBlockInputName(BlockID.clone_scroll, "base", true);
 
 let CloneScrollRecipe = {
 	recipes: {},
@@ -9885,13 +10270,14 @@ ModAPI.addAPICallback("ICore", function(api){
 				this.data.aspect -= 1;
 		}
 	});
-	SingularityAPI.setBlockOutputName(BlockID.aw_generator_EU, "output", true);
+	SingularityAPI.setBlockInputName(BlockID.aw_generator_EU, "base", true);
 	ICRender.getGroup("ic-wire").add(BlockID.aw_generator_EU, -1);
 	EnergyTileRegistry.addEnergyTypeForId(BlockID.aw_generator_EU, EU);
 	
 	IDRegistry.genBlockID("aw_generator_aspect");
 	Block.createBlock("aw_generator_aspect", [ {name: "aw.block.aw_generator_aspect", texture: [["plant", 0]], inCreative: true} ]);
-	
+
+	SingularityAPI.setBlockOutputName(BlockID.aw_generator_aspect, "base", true);
 	GeneratorIc(null, BlockID.aw_enchanted_stone).setBlockModel(BlockID.aw_generator_aspect);
 	RitualAPI.addRecipe("ritual_1", "aw_generator_aspect", [BlockID.aw_enchanted_stone, BlockID.aw_enchanted_stone, ItemID.magic_crystal, BlockID.aw_enchanted_stone], {
 		id: BlockID.aw_generator_aspect,
@@ -9908,7 +10294,7 @@ ModAPI.addAPICallback("ICore", function(api){
 		defaultValues: {
 			aspect: 0,
 			aspectMax: 50,
-			pos:{x:0,y:0,z:0},
+			pos:null,
 			energy: 0
 		},
 		canReceiveEnergy(){
@@ -9917,12 +10303,17 @@ ModAPI.addAPICallback("ICore", function(api){
 		canExtractEnergy(){
 			return false;
 		},
+		client: new SingularityLines.Client(),
+		init(){
+			SingularityAPI.init(this);
+		},
 		tick(){
 			if(this.data.energy >= 3){
 				this.data.energy-=3;
 				this.data.aspect+=1;
 			}
-			SingularityAPI.transfersBlock(this, World.getTileEntity(this.data.pos.x, this.data.pos.y, this.data.pos.z, this.blockSource), 1, base_transfer);
+
+			SingularityAPI.transfers(this, 2, base_transfer);
 		},
 		energyReceive(type, amount, voltage) {
 			let maxVoltage = 32;
@@ -9940,7 +10331,7 @@ ModAPI.addAPICallback("ICore", function(api){
 			return add;
 		},
 		click(id, count, data, coords, player){
-			this.data.pos = SingularityAPI.itemUse(player, Entity.getCarriedItem(player), BlockID.singularity_extract, 10, coords, true);
+			SingularityAPI.click(this, coords, player);
 		}
 	});
 		ICRender.getGroup("ic-wire").add(BlockID.aw_generator_aspect, -1);
@@ -9990,10 +10381,10 @@ function getBookWandData(id){
   arr.push({text: Translation.translate("aw.guide.text.characteristics"), size: 20});
   let wand = Wands.getStick(id);
   let keys = Object.keys(wand.bonus);
-  for(let i in keys){
+  for(let i in keys)
   	arr.push({text: keys[i] + " " + -wand.bonus[keys[i]], size: 15});
-  }
   arr.push({text: "time "+wand.time, size: 15});
+  arr.push({text: "scroll max  "+wand.scroll_max, size: 15});
   return arr;
 }
 ScrutinyAPI.register("aw", {
@@ -11446,7 +11837,9 @@ World.setBlock(coords.x, coords.y+1, coords.z, BlockID.enchantment_forest_flower
 			Structure.setStructure("enchanted_forest_wood_"+random.nextInt(8), pos.x, pos.y, pos.z, BlockSource.getCurrentWorldGenRegion());
 	}
 });
-Network.addServerPacket("test", function(p){
+
+//это не должно было войти в релиз
+/*Network.addServerPacket("test", function(p){
 	const size = 1024;
 	const seed = Math.floor(Math.random()*10000);
 	alert("start, size: "+size+", seed: "+seed)
@@ -11473,7 +11866,7 @@ Callback.addCallback("NativeCommand", function(str){
 	Network.sendToServer("test", {
 		size: cmd[1]
 	})
-});
+});*/
 
 
 Callback.addCallback("GenerateBiomeMap", function(chunkX, chunkZ, random, dimensionId, chunkSeed, worldSeed, dimensionSeed){
@@ -11481,11 +11874,9 @@ Callback.addCallback("GenerateBiomeMap", function(chunkX, chunkZ, random, dimens
 		return;
 	let X = Math.floor(chunkX) * 16;
 	let Z = Math.floor(chunkZ) * 16;
-//Debug.m("x: "+X+", z: "+Z+", perlin: "+GenerationUtils.getPerlinNoise(X, 0, Z, dimensionSeed, 1/1512, 3));
+
 	let biome = World.getBiomeMap(X, Z);
-	if(biomes.indexOf(biome) != -1)
-		return;
-	if(GenerationUtils.getPerlinNoise(X, 0, Z, dimensionSeed, 1/1512, 3) < .75)
+	if(biomes.indexOf(biome) != -1 || GenerationUtils.getPerlinNoise(X, 0, Z, dimensionSeed, 1/1512, 3) < .75)
 		return;
 	for(let x = 0; x < 16; x++)
 		for(let z = 0; z < 16; z++)
@@ -12012,6 +12403,24 @@ ItemGenerate.setItemIntegration(ItemID.magic_crystal, .1, {max: 1});
 
 
 
+// file: dimension/kingdom_darkness/dimension.js
+
+
+
+
+
+// file: dimension/kingdom_darkness/generation.js
+
+
+
+
+
+// file: dimension/kingdom_darkness/structures.js
+
+
+
+
+
 // file: ritual/clone.js
 
 
@@ -12076,15 +12485,17 @@ ItemGenerate.setItemIntegration(ItemID.magic_crystal, .1, {max: 1});
 
 // file: ritual/spawn.js
 
-Callback.addCallback("ItemUse", function(coords, item, block, isExternal, player) {
-    if(item.id == ItemID.bookk){
-        if(Structure.isStructure("aw_ritual_0", coords.x, coords.y, coords.z, BlockSource.getDefaultForActor(player))){
-             Structure.destroy("aw_ritual_0", coords.x, coords.y, coords.z, BlockSource.getDefaultForActor(player));
-            var b = BlockSource.getDefaultForActor(player);
-            b.spawnEntity(coords.x,coords.y, coords.z, "aw:boss0");
-        }
-    }
-});
+if(!Game.isDedicatedServer()){
+	Callback.addCallback("ItemUse", function(coords, item, block, isExternal, player) {
+		if(item.id == ItemID.bookk){
+			let region = BlockSource.getDefaultForActor(player)
+			if(Structure.isStructure("aw_ritual_0", coords.x, coords.y, coords.z, region)){
+				Structure.destroy("aw_ritual_0", coords.x, coords.y, coords.z, region);
+				region.spawnEntity(coords.x,coords.y, coords.z, "aw:boss0");
+			}
+		}
+	});
+}
 
 
 
@@ -12181,7 +12592,7 @@ function CommandRegistry(name){
 	let _description = "";
 	
 	this.getDescription = function(){
-		return Translation.translate(_description);
+		return translate(_description);
 	}
 	
 	this.setDescription = function(description){
@@ -12217,7 +12628,7 @@ function CommandRegistry(name){
 	this.setArgs = function(args, player, pos){
 		_args = [];
 		if(_types.length != args.length)
-			return "не достаточно аргументов";
+			return translate("aw.command.not_enough_arguments");
 		
 		for(let i in args){
 			let type = _types[i];
@@ -12228,19 +12639,19 @@ function CommandRegistry(name){
 			if(type == "number"){
 				try{
 					_args.push(parseInt(value));
-				}catch(e){return "Не верный тип числа";}
+				}catch(e){return translate("aw.command.invalid_number");}
 			}else if(type == "mobs" || type == "player"){
 				let mob = this.getMobsFor(value, player, pos);
 				
 				if(_more_entity){
 					if(mob === null) 
-						return "Мобы не найдены";
+						return translate("aw.command.mobs_not_found");
 					_args.push(mob);
 				}else{
 					if(mob.length > 1) 
-						return "Не допустимое количество мобов";
+						return translate("aw.command.not_allowed_mobs");
 					if(mob[0] === null) 
-						return "Моб не найден";
+						return translate("aw.command.mob_not_found");
 					_args.push(mob[0]);
 				}
 			}else if(type == "boolean"){
@@ -12252,11 +12663,11 @@ function CommandRegistry(name){
 						_args.push(false);
 					break;
 					default:
-						return "Не допустимое значение";
+						return translate("aw.command.invalid_value");
 				}
 			}else if(Array.isArray(type)){
 				if(type.indexOf(value) == -1)
-					return "Тип "+value+" не допустим";
+					return translate("aw.command.invalid_type", [["name", value]]);
 				_args.push(value);
 			}else
 				_args.push(value);
@@ -12270,26 +12681,34 @@ function CommandRegistry(name){
 		switch(value){
 			case "@s":
 				return [player];
+				
 			case "@r":
 				return [entitys[Math.floor(Math.random()*entitys.length)]];
+				
 			case "@p":
 				if(!pos) return null;
+				
 				let closest = {
 					entity: null,
           dis: 999999999
         };
+        
         for(let i in entitys){
         	let entity = entitys[i];
         	let dis = Entity.getDistanceToCoords(entity, pos);
+        	
         	if(dis < closest.dis) {
         		closest.entity = entity;
         		closest.dis = dis;
 					}
 				}
+				
 				return [Number(closest.entity)];
 			break;
+			
 			case "@a":
 				return entitys;
+				
 			default:
 				return [getPlayerByName(value)];
 		}
@@ -12320,14 +12739,22 @@ function CommandRegistry(name){
 	this.runServer = function(client, args){
 		return _runServer.call(this, client, args);
 	}
+	
+	this.successfully = function(player){
+		if(player)
+			PlayerAC.message(player, translate("aw.command.successfully"));
+		else
+			Game.message(translate("aw.command.successfully"));
+	}
 }
 
 CommandRegistry.commands = {};
 
 CommandRegistry.create = function(cmd){
-	Network.addServerPacket("command."+cmd.name, function(client, data){
-		cmd.runServer(client, data.args);
-	});
+	if(!Game.isDedicatedServer())
+		Network.addServerPacket("command."+cmd.name, function(client, data){
+			cmd.runServer(client, data.args);
+		});
 	
 	CommandRegistry.commands["/"+cmd.name] = cmd;
 }
@@ -12359,7 +12786,7 @@ Callback.addCallback("NativeCommand", function(str){
 
 
 CommandRegistry.create(new CommandRegistry("aw_help")
-	.setDescription("return all command")
+	.setDescription("aw.command.description.aw_help")
 	.setRunClient(function(){
 		let message = "=======Ancient wonders=======";
 		
@@ -12391,7 +12818,7 @@ CommandRegistry.create(new CommandRegistry("aw_help")
 	}));
 	
 CommandRegistry.create(new CommandRegistry("aw_stats")
-	.setDescription("dev: set class developer, new: delete class")
+	.setDescription("aw.command.description.aw_stats")
 	.setTypesArgs(["dev", "new"], "player")
 	.setRunServer(function(client, args){
 		switch(args[0]){
@@ -12402,16 +12829,16 @@ CommandRegistry.create(new CommandRegistry("aw_stats")
 				AncientWonders.setPlayerClass(args[1]);
 			break;
 		}
-		PlayerAC.message(args[1], "Команда успешно выполнена");
+		this.successfully(args[1]);
 	})
 	.setRunClient(CommandDefault.CLIENT));
 	
 CommandRegistry.create(new CommandRegistry("scrutiny_save")
-	.setDescription("disabled/enabled save scrutiny")
+	.setDescription("aw.command.description.scrutiny_save")
 	.setTypesArgs("boolean")
 	.setRunServer(function(client, args){
 		ScrutinyAPI.save = args[0];
-		PlayerAC.message(client.getPlayerUid(), "Команда успешно выполнена");
+		this.successfully(client.getPlayerUid());
 	})
 	.setRunClient(CommandDefault.CLIENT));
 
@@ -12698,61 +13125,6 @@ Recipes.addShaped({id: ItemID.beltAw, count: 1, data: 0},
 ['b', 266, 0, 'g', ItemID.aw_amylet2, 0]);
 }
 });
-Callback.invokeCallback("AncientWonders");
-ModAPI.registerAPI("AncientWondersAPI", {
-    MagicCore: MagicCore,
-    Wands: Wands,
-    delItem: delItem2,
-    ParticlesAPI: ParticlesAPI,
-    Render: RenderAPI,
-    Mp: Mp,
-    RitualAPI: RitualAPI,
-    BookAPI: BookAPI,
-    PlayerAC: PlayerAC,
-    EffectAPI: EffectAPI,
-    Potion: Potion,
-    Bag: Bag,
-    setTimeout: setTimeout,
-    ScrutinyAPI_V2: ScrutinyAPI_V2,
-    AchievementAPI: AchievementAPI,
-    MagicSmithy: MagicSmithy,
-    SoundManager: SoundManager,
-    ScrutinyAPI: ScrutinyAPI,
-    addScrut: addScrut,
-    AncientWonders: AncientWonders,
-    TranslationLoad: TranslationLoad,
-    SingularityAPI: SingularityAPI,
-    EntityReg: EntityReg,
-    ItemName: ItemName,
-    Scrutiny: Scrutiny,
-    Wand: Wand,
-    ScrollBase: ScrollBase,
-    Scroll: Scroll,
-    ScrollEvent: ScrollEvent,
-    AW: {
-    	typeDamage: {
-    		magic: "magic",
-    		dead: "dead"
-    	},
-    	srollEvent: {
-    		useBlock: ItemID.sroll1,
-    		usePlayer: ItemID.sroll2,
-    		useMob: ItemID.sroll3
-    	},
-    	creativeGroup: {
-    		rune: "rune",
-    		wand: "wand",
-    		eventSroll: "events",
-    		srolls: "sroll",
-    		decorSroll: "decor"
-    	}
-    },
-    requireGlobal(command){
-      return eval(command);
-    },
-    versionAPI: 10
-});
-Logger.Log("Ancient Wonders load", "API");
 
 
 
@@ -13743,6 +14115,498 @@ ModAPI.addAPICallback("RecipeViewer", function(api){
       input7: {x: 590, y: 300, size: 100},
 		}
 	}));
+});*/
+
+
+
+
+// file: core/shared.js
+
+const API = {
+    MagicCore: MagicCore,
+    Wands: Wands,
+    delItem: delItem2,
+    ParticlesAPI: ParticlesAPI,
+    Render: RenderAPI,
+    Mp: Mp,
+    RitualAPI: RitualAPI,
+    BookAPI: BookAPI,
+    PlayerAC: PlayerAC,
+    EffectAPI: EffectAPI,
+    Potion: Potion,
+    Bag: Bag,
+    setTimeout: setTimeout,
+    ScrutinyAPI_V2: ScrutinyAPI_V2,
+    AchievementAPI: AchievementAPI,
+    MagicSmithy: MagicSmithy,
+    SoundManager: SoundManager,
+    ScrutinyAPI: ScrutinyAPI,
+    addScrut: addScrut,
+    AncientWonders: AncientWonders,
+    TranslationLoad: TranslationLoad,
+    SingularityAPI: SingularityAPI,
+    EntityReg: EntityReg,
+    ItemName: ItemName,
+    
+    Scrutiny: Scrutiny,
+    Wand: Wand,
+    ScrollBase: ScrollBase,
+    Scroll: Scroll,
+    ScrollEvent: ScrollEvent,
+    
+    AW: {
+    	typeDamage: {
+    		magic: "magic",
+    		dead: "dead"
+    	},
+    	srollEvent: {
+    		useBlock: ItemID.sroll1,
+    		usePlayer: ItemID.sroll2,
+    		useMob: ItemID.sroll3
+    	},
+    	creativeGroup: {
+    		rune: "rune",
+    		wand: "wand",
+    		eventSroll: "events",
+    		srolls: "sroll",
+    		decorSroll: "decor"
+    	}
+    },
+    requireGlobal(command){
+      return eval(command);
+    },
+    versionAPI: 10
+};
+Callback.invokeCallback("AncientWonders", API);
+ModAPI.registerAPI("AncientWondersAPI", API);
+Logger.Log("Ancient Wonders load", "API");
+
+
+
+
+// file: test.js
+
+let DefaultAnim = {
+	time: 60,
+	fps: 20
+};
+
+function EMPTY_FUNCTION(){}
+
+function ModelAnimationRender(){
+	this.time = DefaultAnim.time;
+	this.fps = DefaultAnim.fps;
+	
+	let caches = null;
+	let caches_replace = null;
+	let frames = 0;
+	let start = null;
+	let end = null;
+	let update = {};
+	let update_replace = {};
+	let self = this;
+	
+	function uptState(){
+		frames = (self.time / 20) * self.fps;
+		update = getTransferFrame(start, end);
+	}
+	
+	this.getFrames = function(){
+		return frames;
+	}
+	
+	this.setTime = function(time, func){
+		func = func || uptState;
+		this.time = time;
+		func();
+		return this;
+	}
+	
+	this.setModel = function(_st, _end, func){
+		func = func || uptState;
+		start = _st;
+		end = _end;
+		func();
+		return this;
+	}
+	
+	function getModelToFrameCache(frame){
+		return caches[frame];
+	}
+	
+	function getTransferFrame(start, end){
+		if(!start || !end) return;
+		
+		let boxes = {};
+		let names_start = start.getAllName();
+		let names_end = end.getAllName();
+		let start_boxes = start.getBoxes();
+		let end_boxes = end.getBoxes();
+		let arr = ["x1", "y1", "z1", "x2", "y2", "z2"];
+		
+		for(let i in names_end){
+			let name = names_end[i];
+			if(!start_boxes[name])
+				continue;
+			
+			let box_start = start_boxes[name];
+			let box_end = end_boxes[name];
+			
+			boxes[name] = {id: box_start.id, data: box_start.data};
+			
+			for(let index in arr){
+				let p = arr[index];
+				boxes[name][p] = (box_end[p] - box_start[p])/frames;
+			}
+		}
+		
+		return boxes;
+	}
+	
+	function buildModel(frame, _start, _update){
+		_update = _update || update;
+		_start = _start || start;
+		
+		let model = new RenderAPI.Model();
+		let boxes = _start.getBoxes();
+		
+		for(let key in _update){
+			let obj = _update[key];
+			let start_obj = boxes[key];
+			
+			model.addBoxByBlock(key, start_obj.x1 + (obj.x1*frame), start_obj.y1 + (obj.y1*frame), start_obj.z1 + (obj.z1*frame), start_obj.x2 + (obj.x2*frame), start_obj.y2 + (obj.y2*frame), start_obj.z2 + (obj.z2*frame), obj.id, obj.data);
+		}
+		return model;
+	}
+	
+	this.getModelToFrame = buildModel;
+	
+	this.prebuild = function(fps){
+		this.fps = fps;
+		uptState();
+		caches = [];
+		
+		for(let frame = 0;frame < frames;frame++)
+			caches[frame] = buildModel(frame);
+		
+		update_replace = getTransferFrame(end, start);
+		cache_replace = [];
+		
+		for(let frame = 0;frame < frames;frame++)
+			cache_replace[frame] = buildModel(frame, end, update_replace);
+		
+		this.getModelToFrame = getModelToFrameCache;
+		return this;
+	}
+	
+	this.disableCache = function(){
+		caches = null;
+		caches_replace = null;
+		this.getModelToFrame = buildModel;
+		return this;
+	}
+	
+	this.replaceModel = function(){
+		let a = caches;
+		caches = cache_replace;
+		cache_replace = a;
+		
+		a = update_replace;
+		update = update_replace;
+		update_replace = a;
+		
+		return this.setModel(end, start, EMPTY_FUNCTION);
+	}
+	
+	this.clone = function(){
+		return new ModelAnimationRender()
+			.setModel(start, end, EMPTY_FUNCTION)
+			.setTime(this.time, EMPTY_FUNCTION)
+			.prebuild(this.fps);
+	}
+}
+
+function _ModelAnimation(setting, render){
+	render = render || new ModelAnimationRender();
+	setting = setting || new DefaultModelAnimationRender(this);
+	
+	let handler = {
+		start(){},
+		update(frame){},
+		end(){}
+	};
+	
+	this.getSetting = function(){
+		return setting;
+	}
+	
+	this.setSetting = function(_setting){
+		setting = _setting;
+		return this;
+	}
+	
+	this.getRender = function(){
+		return render;
+	}
+	
+	this.getTime = function(){
+		return render.time;
+	}
+	
+	this.setModel = function(st, end){
+		render.setModel(st, end);
+		return this;
+	}
+	
+	this.replaceModel = function(){
+		render.replaceModel();
+		return this;
+	}
+	
+	this.setTime = function(time){
+		render.setTime(time);
+		return this;
+	}
+	
+	this.prebuild = function(fps){
+		render.prebuild(fps);
+		return this;
+	}
+	
+	this.clone = function(){
+		let setting = setting.clone();
+		return new ModelAnimation(setting, render.clone()).setModel(setting).setHandler(handler);
+	}
+	
+	let all_frame = {};
+	this.updateModel = function(x, y, z, infinity){
+		let frames = render.getFrames();
+		let key = x+':'+y+":"+z;
+		
+		if(!all_frame[key]){
+			handler.start(x, y, z);
+			var data = {frame: 0};
+			all_frame[key] = data;
+		}else
+			var data = all_frame[key];
+		
+		let frame = Math.floor(data.frame/render.time*frames);
+		
+		render.getModelToFrame(frame)
+			.map(x, y, z);
+		
+		data.frame++;
+			
+		if(data.frame >= render.time){
+			handler.end(x, y, z);
+			delete all_frame[key];
+		}
+	}
+	
+	this.destroy = function(x, y, z){
+		delete all_frame[key];
+		BlockRenderer.unmapAtCoords(x, y, z);
+	}
+	
+	this.play = function(x, y, z, infinity){
+		let _setting = setting.clone();
+		_setting.setProperties(infinity, infinity);
+		_setting.play(x, y, z);
+		return _setting;
+	}
+	
+	this.setHandler = function(obj){
+		handler = {
+			start: obj.start || function(){},
+			update: update.end || function(){},
+			end: obj.end || function(){},
+		};
+		return this;
+	}
+	
+	this.getHandler = function(){
+		return handler;
+	}
+}
+
+function DefaultModelAnimationRender(model){
+	let infinity = false;
+	let back = false;
+	
+	let back_status = false;
+	let destroy_status = false;
+	
+	this.clone = function(_model){
+		return new DefaultModelAnimationRender(_model||model).setProperties(infinity, back);
+	}
+	
+	this.setModel = function(md){
+		model = md;
+		return this;
+	}
+	
+	this.setProperties = function(_infinity, _back){
+		infinity = _infinity;
+		back = _back;
+		return this;
+	}
+	
+	this.destroy = function(){
+		destroy_status = true;
+		return this;
+	}
+	
+	this.play = function(x, y, z, render){
+		render = render || model.getRender().clone();
+		let handler = model.getHandler();
+		let self = this;
+		
+		let frames = render.getFrames()-1;
+		handler.start(x, y, z);
+		let animation = createAnimation((render.time / 20) * 1000, function(value, anim){
+			if(destroy_status)
+				return anim.stop();
+			
+			let frame = Math.floor(frames*value);
+			
+			render.getModelToFrame(frame)
+				.map(x, y, z);
+			
+			handler.update(frame, x, y, z);
+		});
+		animation.addListener({
+			onAnimationEnd(){
+				handler.end(x, y, z);
+				
+				if(destroy_status){
+					destroy_status = false;
+					BlockRenderer.unmapAtCoords(x, y, z);
+					return;
+				}
+				
+				alert(back_status);
+				if(back_status){
+					back_status = false;
+					render.replaceModel();
+				}else if(back){
+					render.replaceModel();
+					back_status = true;
+					return self.play(x, y, z, render);
+				}
+				
+				infinity && self.play(x, y, z, render);
+			}
+		});
+	}
+}
+/*
+Я не помню что тут это делаеь
+
+Правила!
+👉запрещён контент 16+, да да это я тебе Антон и Бек, и других это тоже касается 😱
+👉запрещён спам😳
+👉запрещены массовы упоминания🤖
+👉запрещена реклама, допускаются репосты записей если они содержат тематику inner core 🧐
+👉прошу всех ориентироваться по времени МСК👀
+👉каждый человек это личность, если вас оскорбили оскорбите в ответ👺
+👉запрещён различный не культурный лексикон, мат не желателен 🥱
+👉Если вам мешают уведомления беседы, отключите их
+👉 запрещены политические темы
+👉 запрещены издевательства над админом
+👉 запрещено попрошайничество
+
+Наказания: мут, бан, по настроению админов
+
+👉ютуб канал - https://youtube.com/channel/UCaY38OdcxqsaqH2ulj_337A
+👉гайд по моду Ancient wonders - https://vk.com/@-186544580-gaid-po-modu-ancient-wonders-2
+Skyblock help - https://vk.com/topic-186544580_48495110
+Телеграмм чат -
+https://t.me/DungeonCraftChat
+
+Если у вас есть вопросы, пишите.
+
+
+Правила!
+👉запрещён контент 16+, да да это я тебе Антон и Бек, и других это тоже касается 😱
+👉запрещён спам😳
+👉запрещены массовы упоминания🤖
+👉запрещена реклама, допускаются репосты записей если они содержат тематику inner core 🧐
+👉прошу всех ориентироваться по времени МСК👀
+👉каждый человек это личность, если вас оскорбили оскорбите в ответ👺
+👉запрещён различный не культурный лексикон, мат не желателен 🥱
+👉если вас оскорбил Антон, знайте, это его обычное общение 🌚
+👉прошу не игратся долго с ботом🤖
+👉Антону не желательно пидарасить каждого пользователя 
+👉Если вам мешают уведомления беседы, отключите их
+👉ниутверждать, то чего не знаешь(бан)
+👉 запрещены политические темы
+👉 запрещены издевательства над админом
+👉 за пропаганду выдаётся предупреждение 
+👉 запрещена не объективная токсичность 
+👉 запрещено попрошайничество
+
+Наказания: мут, бан, по настроению админов
+
+👉ютуб канал - https://youtube.com/channel/UCaY38OdcxqsaqH2ulj_337A
+👉гайд по моду Ancient wonders - https://vk.com/@-186544580-gaid-po-modu-ancient-wonders-2
+Skyblock help - https://vk.com/topic-186544580_48495110
+Телеграмм чат -
+https://t.me/DungeonCraftChat
+
+Если у вас есть вопросы, пишите.
+
+Данная беседа была создана точно уж не для того чтобы Антон пидарасил пользователей, а для общения с аудиторией.
+[Статья]
+https://vk.com/@-186544580-gaid-po-modu-ancient-wonders-2
+*/
+
+//Тестовый код анимации
+
+/*const DEF = new RenderUtil.Model()
+	.add(0, 0, 0, .5, .5, .5, 98);
+const DEF_END = new RenderUtil.Model()
+	.add(.5, .5, .5, 1, 1, 1, 98);
+
+BlockRenderer.enableCoordMapping(98, -1, DEF.getICRenderModel());
+
+let animation = new _ModelAnimation()
+	.setModel(DEF, DEF_END)
+	.setTime(180)
+	.prebuild(60);//кеширует модель для каждого кадра, в 60 fps(можно указать любое количество кадров)
+
+//количество fps привязано к тик, модели для каждого кадра создаются в реальном времени 
+let animation_legacy = new ModelAnimation()
+	.setModel(DEF, DEF_END)
+	.setTime(180);
+	
+Callback.addCallback("ItemUse", function(coords, it, block){
+	if(block.id == 98){
+		if(it.id == 280){
+			let setting = new DefaultModelAnimationRender(animation);
+			setting.setProperties(false, true);
+			setting.play(coords.x,coords.y,coords.z);
+		}else if(it.id == 264){
+			let setting = new DefaultModelAnimationRender(animation);;
+			setting.setProperties(true, true);
+			setting.play(coords.x,coords.y,coords.z);
+		}else if(it.id == 263)
+			animation_legacy.play(coords.x,coords.y,coords.z);
+	}
+});*/
+
+/*BlockRenderer.enableCoordMapping(98, -1, DEF.getICRenderModel());
+let animation = new RenderAPI.Animation(DEF, {
+	"25": new RenderAPI.Model().add(0, 0, .5, .5, .5, 1),
+	"50": new RenderAPI.Model().add(.5, 0, .5, 1, .5, 1),
+	"75": new RenderAPI.Model().add(.5, 0, 0, 1, .5, .5),
+	"100": new RenderAPI.Model().add(0, 0, 0, .5, .5, .5)
+});
+animation.setTime(100);
+animation.prebuild(60);//максимум 60 fps
+
+Callback.addCallback("ItemUse", function(coords, it, block){
+	if(block.id == 98)
+		animation.play(coords.x,coords.y,coords.z);
 });*/
 
 

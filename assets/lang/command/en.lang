@@ -1,0 +1,19 @@
+{
+	//ошибки парсинга команды 
+	"aw.command.invalid_value": "Invalid value",
+	"aw.command.invalid_type": "The {name} type is not allowed",
+	"aw.command.invalid_number": "Wrong number type",
+	"aw.command.mob_not_found": "Mob not found",
+	"aw.command.mobs_not_found": "Mobs not found",
+	"aw.command.not_allowed_mobs": "Not allowed number of mobs",
+	"aw.command.not_enough_arguments": "Not enough arguments",
+	
+	
+	//описания
+	"aw.command.description.aw_help": "return all command",
+	"aw.command.description.aw_stats": "dev: set class developer, new: delete class",
+	"aw.command.description.scrutiny_save": "disabled/enabled save scrutiny",
+	
+	//успешно выполненные команды
+	"aw.command.successfully": "The command was executed successfully"
+}

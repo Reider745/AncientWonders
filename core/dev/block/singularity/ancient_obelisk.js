@@ -26,7 +26,7 @@ Callback.addCallback("DestroyBlock", function(coords, block, player){
 		BlockSource.getDefaultForActor(player).setBlock(coords.x, coords.y-1,coords.z, 0, 0)
 	}
 })
-SingularityAPI.setBlockOutputName(BlockID.ancient_bottom_obelisk, "output", true);
+SingularityAPI.setBlockInputName(BlockID.ancient_bottom_obelisk, "base", true);
 TileEntity.registerPrototype(BlockID.ancient_bottom_obelisk, {
 	defaultValues: {
 		add: 1,
