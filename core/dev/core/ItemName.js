@@ -1,4 +1,9 @@
-var CustomName = WRAP_JAVA("com.core.api.Item");
+if(!Game.isDedicatedServer())
+	var CustomName = WRAP_JAVA("com.core.api.Item");
+else
+	var CustomName = {
+		overrideName(){}
+	};
 
 Network.addClientPacket("ItemName.setNameClient", function(data){
 	for(let key in data){

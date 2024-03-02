@@ -84,7 +84,7 @@ const TranslationLoad = {
 					let path = String(files[i]);
 					let file = readJson(path);
 					TranslationLoad.loadJson(
-						path.split("/").pop().split(".")[0],
+						path.replace("\\", "/").split("/").pop().split(".")[0],
 						translations,
 						file
 					);
@@ -99,7 +99,7 @@ const TranslationLoad = {
 				if(TranslationLoad.auto_translate){
 					let all_translate = translations[key];
 					if(all_translate[current]==undefined)
-						all_translate[current] = "";
+						all_translate[current] = all_translate["en"] || "";
 					Translation.addTranslation(key, all_translate);
 				}else{
 					let all_translate = translations[key];
@@ -134,6 +134,29 @@ const TranslationLoad = {
 };
 function translate(key, arr){
 	return TranslationLoad.get(key, arr||[]);
+}
+
+Network.addClientPacket("aw.translate_message", function(data){
+	Game.message(translate(data.key, data.arr));
+});
+
+Network.addClientPacket("aw.translate_tip_message", function(data){
+	Game.tipMessage(translate(data.key, data.arr));
+});
+
+function translateMessage(player, key, arr){
+	let client = Network.getClientForPlayer(player);
+	client && client.send("aw.translate_message", {
+		key: key,
+		arr: arr
+	});
+}
+function translateTipMessage(player, key, arr){
+	let client = Network.getClientForPlayer(player);
+	client && client.send("aw.translate_tip_message", {
+		key: key,
+		arr: arr
+	});
 }
 TranslationLoad.load(__dir__+"assets/lang", "en", 0);
 TranslationLoad.load(__dir__+"assets/lang/potions", "en", 0);

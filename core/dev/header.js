@@ -349,7 +349,7 @@ function playSound(name, player, radius){
 
 
 Callback.addCallback("LevelDisplayed", function() {
-   setTimeout(function (){
+   setTimeoutLocal(function (){
 Game.message(Translation.translate("aw.message.entrance"));
 }, 40);
 });

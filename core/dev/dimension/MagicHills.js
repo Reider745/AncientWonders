@@ -1,4 +1,4 @@
-let MagicHills = new Dimensions.CustomDimension("magic_hills", 1045); 
+/*let MagicHills = new Dimensions.CustomDimension("magic_hills", 1045); 
 MagicHills.setSkyColor(100/255, 100/255, 100/255) 
 MagicHills.setFogColor(100/255, 100/255, 100/255); 
 
@@ -35,7 +35,7 @@ generateVanillaStructures: false,
 			octaves: {count: 2, scale: 40}
 		}
 	}]
-}));
+}));*/
 //Callback.addCallback("ItemUse", function(coords, item){
 	//if(item.id==265)
 //Dimensions.transfer(Player.get(), MagicHills.id)

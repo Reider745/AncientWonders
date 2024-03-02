@@ -95,7 +95,7 @@ const TranslationLoad = {
 					let path = String(files[i]);
 					let file = readJson(path);
 					TranslationLoad.loadJson(
-						path.split("/").pop().split(".")[0],
+						path.replace("\\", "/").split("/").pop().split(".")[0],
 						translations,
 						file
 					);
@@ -110,7 +110,7 @@ const TranslationLoad = {
 				if(TranslationLoad.auto_translate){
 					let all_translate = translations[key];
 					if(all_translate[current]==undefined)
-						all_translate[current] = "";
+						all_translate[current] = all_translate["en"] || "";
 					Translation.addTranslation(key, all_translate);
 				}else{
 					let all_translate = translations[key];
@@ -145,6 +145,29 @@ const TranslationLoad = {
 };
 function translate(key, arr){
 	return TranslationLoad.get(key, arr||[]);
+}
+
+Network.addClientPacket("aw.translate_message", function(data){
+	Game.message(translate(data.key, data.arr));
+});
+
+Network.addClientPacket("aw.translate_tip_message", function(data){
+	Game.tipMessage(translate(data.key, data.arr));
+});
+
+function translateMessage(player, key, arr){
+	let client = Network.getClientForPlayer(player);
+	client && client.send("aw.translate_message", {
+		key: key,
+		arr: arr
+	});
+}
+function translateTipMessage(player, key, arr){
+	let client = Network.getClientForPlayer(player);
+	client && client.send("aw.translate_tip_message", {
+		key: key,
+		arr: arr
+	});
 }
 TranslationLoad.load(__dir__+"assets/lang", "en", 0);
 TranslationLoad.load(__dir__+"assets/lang/potions", "en", 0);
@@ -1229,41 +1252,10 @@ function playSound(name, player, radius){
 
 
 Callback.addCallback("LevelDisplayed", function() {
-   setTimeout(function (){
+   setTimeoutLocal(function (){
 Game.message(Translation.translate("aw.message.entrance"));
 }, 40);
 });
-
-
-
-
-// file: StructureLoader.js
-
-const path = __dir__+"assets/structure/";
-for(let i = 0;i <= 3;i++){
-	StructureLoader.load(path+"ritual_"+i+".json", "aw_ritual_"+i, "DungeonAPI_V2");
-	StructureLoader.load(path+"fortress/"+i+".json", "aw_fortress_"+i, "DungeonAPI_V2");
-	if(i!=3)
-		StructureLoader.load(path+"quest/location_"+i+".struct", "aw_location_"+i);
-}
-for(let i = 0;i <= 8;i++)
-	StructureLoader.load(path+"enchanted_forest/wood_"+i+".struct", "enchanted_forest_wood_"+i);
-	
-for(let i = 0;i < 5;i++)
-	StructureLoader.load(path+"village/village_"+i+".struct", "aw_village_"+i);
-
-StructureLoader.load(path+"ritual_enchant_level.struct", "aw_ritual_enchant_level");
-	
-StructureLoader.load(path+"enchanted_forest/watch_tower.struct", "aw_watch_tower", null, true);
-StructureLoader.load(path+"golem.struct", "aw_golem");
-StructureLoader.load(path+"Cursed_Tower.dc", "aw_cursed_tower", "DungeonCore");
-StructureLoader.load(path+"House_of_magicians.json", "aw_house_of_magicians", "DungeonAPI_V2")
-StructureLoader.load(path+"magic_temple.json", "aw_magic_temple", "DungeonAPI_V2")
-StructureLoader.load(path+"Ordinary_temple.json", "aw_ordinary_temple", "DungeonAPI_V2");
-StructureLoader.load(path+"Temple_of_magicians.json", "aw_house_of_magicians", "DungeonAPI_V2")
-StructureLoader.load(path+"Temple.json", "aw_temple", "DungeonAPI_V2");
-StructureLoader.load(path+"Tower_of_darkness.json", "aw_tower_of_darkness", "DungeonAPI_V2")
-StructureLoader.load(path+"Tower_of_evil.json", "aw_tower_of_evil", "DungeonAPI_V2");
 
 
 
@@ -2223,7 +2215,12 @@ __plantVertex: [
 
 // file: core/ItemName.js
 
-var CustomName = WRAP_JAVA("com.core.api.Item");
+if(!Game.isDedicatedServer())
+	var CustomName = WRAP_JAVA("com.core.api.Item");
+else
+	var CustomName = {
+		overrideName(){}
+	};
 
 Network.addClientPacket("ItemName.setNameClient", function(data){
 	for(let key in data){
@@ -4379,8 +4376,8 @@ function getPosPolygon(r, i, n){
 	}
 }
 
-const step = 30;
-const polygon_count = 20;
+const step = 15;
+const polygon_count = 10;
 
 const points_polygon = (function(){
 	let points = [];
@@ -4391,6 +4388,23 @@ const points_polygon = (function(){
 	return points;
 })();
 const index_pre = polygon_count-1;
+
+let FUNCS_MESH = [
+	function(mesh, pos, pre_pos, vz, post){
+		mesh.addVertex(pos.x, pos.y, vz);
+		mesh.addVertex(pre_pos.x, pre_pos.y, post);
+	},
+	function(mesh, pos, pre_pos, vz, post){
+		mesh.addVertex(pre_pos.x, pre_pos.y, vz);
+					
+		mesh.addVertex(pre_pos.x, pre_pos.y, vz);
+		mesh.addVertex(pre_pos.x, pre_pos.y, post);
+		mesh.addVertex(pos.x, pos.y, post);
+				
+		mesh.addVertex(pos.x, pos.y, vz);
+		mesh.addVertex(pos.x, pos.y, post);
+	}
+];
 
 function buildLineMesh(x1, y1, z1, x2, y2, z2){
 	const mesh = new RenderMesh();
@@ -4417,21 +4431,7 @@ function buildLineMesh(x1, y1, z1, x2, y2, z2){
 			mesh.addVertex(pos.x, pos.y, vz);
 			mesh.addVertex(pos.x, pos.y, post);
 			
-			if((p+1) % 2 == 0){
-				mesh.addVertex(pos.x, pos.y, vz);
-				pos = points_polygon[p-1];
-				mesh.addVertex(pos.x, pos.y, post);
-			}else{
-				let pre_pos = points_polygon[p-1];
-				mesh.addVertex(pre_pos.x, pre_pos.y, vz);
-					
-				mesh.addVertex(pre_pos.x, pre_pos.y, vz);
-				mesh.addVertex(pre_pos.x, pre_pos.y, post);
-				mesh.addVertex(pos.x, pos.y, post);
-				
-				mesh.addVertex(pos.x, pos.y, vz);
-				mesh.addVertex(pos.x, pos.y, post);
-			}
+			FUNCS_MESH[(p+1) % 2](mesh, pos, points_polygon[p-1], vz, post)
 		}
 		
 		let pre_pos = points_polygon[index_pre];
@@ -4493,14 +4493,13 @@ let SingularityLines = {
 	
 	update(){ 
 		this.mesh.clear();
-		let i = 0;
+		
 		for(let key in this.lines){
 			let obj = this.lines[key];
-			if(obj.visibility){
+			if(obj.visibility)
 				this.mesh.addMesh(obj.mesh, 0, 0, 0);
-				i++;
-			}
 		}
+		
 		this.animation.describe({
 			mesh: this.mesh,
 			material: "aspects_transfer_aw"
@@ -4509,27 +4508,26 @@ let SingularityLines = {
 		this.animation.load();
 	},
 	Client(){
-		let lines = [];
-		let lines_ = {};
-		
 		this.events = {
 			addLine(data){
+				let lines = this.lines = this.lines || {};
 				let line = SingularityLines.add(this.x+.5, this.y+.5, this.z+.5, data.x+.5, data.y+.5, data.z+.5);
-				lines.push(line);
-				lines_[line.key] = line;
+				lines[line.key] = line;
 			},
 			visibility(data){
+				let lines = this.lines = this.lines || {};
 				for(let i in data.lines){
 					let pos = data.lines[i];
-					lines_[SingularityLines.buildKey(this.x, this.y, this.z, pos.x, pos.y, pos.z)].visibility = data.status;
+					lines[SingularityLines.buildKey(this.x, this.y, this.z, pos.x, pos.y, pos.z)].visibility = data.status;
 				}
 				SingularityLines.update();
 			}
 		}
 		
 		this.unload = function(){
-			for(let i in lines)
-				SingularityLines.remove(lines[i].key);
+			let lines = this.lines = this.lines || {};
+			for(let key in lines)
+				SingularityLines.remove(key);
 		}
 	},
 	
@@ -4545,6 +4543,82 @@ let SingularityLines = {
 		tile.networkEntity.send("visibility", {lines: lines, status: false});
 	}
 };
+
+const Thread = java.lang.Thread;
+const SINGULARITY_TIME_SLEEP = 500;
+const RADIUS_VISIBILITY = 35;
+
+Network.addClientPacket("aw.singularity_lines_update", function(lines){
+	for(let key in lines)
+		SingularityLines.setVisibility(key, lines[key]);
+	SingularityLines.update();
+});
+
+let NetworkSingularity = {
+	lines: {},
+	startGame: false,
+	
+	init(){
+		this.startGame = true;
+
+		Threading.initThread("server-singularity-lines", function(){
+			while(NetworkSingularity.startGame){
+				NetworkSingularity.send();
+				Thread.sleep(SINGULARITY_TIME_SLEEP);
+			}
+		});
+	},
+	
+	visibilityLineForTile(tile, line){
+		let lines = this.lines[tile.dimension] = this.lines[tile.dimension] || {};
+		line.visibility = true;
+		lines[line.key] = line;
+	},
+	
+	hidenLineForTile(tile, line){
+		let lines = this.lines[tile.dimension] = this.lines[tile.dimension] || {};
+		line.visibility = false;
+		lines[line.key] = line;
+	},
+	
+	send(){
+		let players = Network.getConnectedPlayers();
+		for(let key in this.lines){
+			let lines = this.lines[key];
+			let dimension = Number(key);
+			
+			for(let i in players){
+				let player = players[i];
+				let send = {};
+				let pos = Entity.getPosition(player);
+				
+				if(Entity.getDimension(player) != dimension)
+					continue;
+					
+				for(let a in lines){
+					let line = lines[a];
+					
+					if(Math.sqrt(Math.pow(pos.x - line.x, 2) + Math.pow(pos.y - line.y, 2) + Math.pow(pos.z - line.z, 2)) < RADIUS_VISIBILITY)
+						send[line.key] = line.visibility;
+					else
+						send[line.key] = false;
+				}
+				
+				let client = Network.getClientForPlayer(player);
+				client && client.send("aw.singularity_lines_update", send);
+			}
+		}
+		this.lines = {};
+	}
+};
+
+Callback.addCallback("LevelDisplayed", function(){
+	NetworkSingularity.init();
+});
+Callback.addCallback("LevelLeft", function(){
+	NetworkSingularity.lines = {};
+	NetworkSingularity.startGame = false;
+});
 
 /*let coords_item_use = [0, 0, 0];
 let first = true;
@@ -4603,15 +4677,16 @@ let SingularityAPI = {
 		}
 		return tiles;
 	},
-	transfersBlock(tile, tiles, value, func){
+	transfersBlock(tile, tiles, value, pos){
 		if(tile.data.aspect - value > 0 && tiles && tiles.blockSource && tiles.data.aspect+value <= tiles.data.aspectMax){
 			tile.data.aspect-=value;
 			tiles.data.aspect+=value;
 			
-			func(tiles, tile);
-			return true;
+			tile.data.activated = World.getThreadTime();
+			return NetworkSingularity.visibilityLineForTile(tile, pos);
 		}
-		return false;
+		if(!tiles || !tile.data.activated || World.getThreadTime() - tile.data.activated > 20)
+			NetworkSingularity.hidenLineForTile(tile, pos);
 	},
 	
 	init(tile){
@@ -4622,25 +4697,14 @@ let SingularityAPI = {
 		}
 	}, 
 	
-	transfers(tile, value, func){
+	transfers(tile, value){
 		let arr = tile.data.arr || [];
 		value /= arr.length;
-		
-		let visilibity = [];
-		let hiden = [];
 		
 		for(let i in arr){
 			let pos = arr[i];
 			
-			if(this.transfersBlock(tile, World.getTileEntity(pos.x, pos.y, pos.z, tile.blockSource), value, func))
-				visilibity.push(pos);
-			else
-				hiden.push(pos);
-		}
-		
-		if(World.getThreadTime() % 20 == 0){
-			SingularityLines.visibilityLineForTile(tile, visilibity);
-			SingularityLines.hidenLineForTile(tile, hiden);
+			this.transfersBlock(tile, World.getTileEntity(pos.x, pos.y, pos.z, tile.blockSource), value, pos);
 		}
 	},
 	
@@ -4655,13 +4719,11 @@ let SingularityAPI = {
 			if(pos_.x == pos.x && pos_.y == pos.y && pos_.z == pos.z)
 				return;
 		}
-		
+
+		pos.key = SingularityLines.buildKey(tile.x, tile.y, tile.z, pos.x, pos.y, pos.z);
+		alert(pos.key)
 		SingularityLines.addLineForTile(tile, pos.x, pos.y, pos.z);
 		tile.data.arr.push(pos);
-	},
-	
-	getDistante(p1, p2){
-		return Math.sqrt(Math.pow(p1.x+.5 - p2.x+.5, 2) + Math.pow(p1.y+.5 - p2.y+.5, 2) + Math.pow(p1.z+.5 - p2.z+.5, 2));
 	},
 	
 	itemUse(player, item, block, count, coords, bool){
@@ -4674,12 +4736,12 @@ let SingularityAPI = {
 				y: item.extra.getInt("y", 0),
 				z: item.extra.getInt("z", 0)
 			};
-			if(this.getDistante(pos, coords) > count || !this.isInputs("base", region.getBlockId(pos.x, pos.y, pos.z))){
-				Mp.tipMessage(player, TranslationLoad.get("aw.tip_message.binding_staff_singularity_error", [["value", count]]));
+			if(Entity.getDistanceBetweenCoords(pos, coords) > count || !this.isInputs("base", region.getBlockId(pos.x, pos.y, pos.z))){
+				translateTipMessage(player, "aw.tip_message.binding_staff_singularity_error", [["value", count]]);
 				return null;
 			}
 			if(bool)
-				Mp.tipMessage(player, Translation.translate("aw.tip_message.binding_staff_singularity"))
+				translateTipMessage(player, "aw.tip_message.binding_staff_singularity");
 			return pos;
 		}
 		return null;
@@ -10362,6 +10424,37 @@ RenderAPI.setPlantModel(BlockID.enchantment_forest_flower, 0, "enchantment_fores
 
 
 
+// file: StructureLoader.js
+
+const path = __dir__+"assets/structure/";
+for(let i = 0;i <= 3;i++){
+	StructureLoader.load(path+"ritual_"+i+".json", "aw_ritual_"+i, "DungeonAPI_V2");
+	StructureLoader.load(path+"fortress/"+i+".json", "aw_fortress_"+i, "DungeonAPI_V2");
+	if(i!=3)
+		StructureLoader.load(path+"quest/location_"+i+".struct", "aw_location_"+i);
+}
+for(let i = 0;i <= 8;i++)
+	StructureLoader.load(path+"enchanted_forest/wood_"+i+".struct", "enchanted_forest_wood_"+i);
+	
+for(let i = 0;i < 5;i++)
+	StructureLoader.load(path+"village/village_"+i+".struct", "aw_village_"+i);
+
+StructureLoader.load(path+"ritual_enchant_level.struct", "aw_ritual_enchant_level");
+	
+StructureLoader.load(path+"enchanted_forest/watch_tower.struct", "aw_watch_tower", null, true);
+StructureLoader.load(path+"golem.struct", "aw_golem");
+StructureLoader.load(path+"Cursed_Tower.dc", "aw_cursed_tower", "DungeonCore");
+StructureLoader.load(path+"House_of_magicians.json", "aw_house_of_magicians", "DungeonAPI_V2")
+StructureLoader.load(path+"magic_temple.json", "aw_magic_temple", "DungeonAPI_V2")
+StructureLoader.load(path+"Ordinary_temple.json", "aw_ordinary_temple", "DungeonAPI_V2");
+StructureLoader.load(path+"Temple_of_magicians.json", "aw_house_of_magicians", "DungeonAPI_V2")
+StructureLoader.load(path+"Temple.json", "aw_temple", "DungeonAPI_V2");
+StructureLoader.load(path+"Tower_of_darkness.json", "aw_tower_of_darkness", "DungeonAPI_V2")
+StructureLoader.load(path+"Tower_of_evil.json", "aw_tower_of_evil", "DungeonAPI_V2");
+
+
+
+
 // file: guide_book/window.js
 
 function getBookSrollData(id){
@@ -11730,7 +11823,7 @@ Callback.addCallback("LevelDisplayed", function(){
 
 // file: dimension/MagicHills.js
 
-let MagicHills = new Dimensions.CustomDimension("magic_hills", 1045); 
+/*let MagicHills = new Dimensions.CustomDimension("magic_hills", 1045); 
 MagicHills.setSkyColor(100/255, 100/255, 100/255) 
 MagicHills.setFogColor(100/255, 100/255, 100/255); 
 
@@ -11767,7 +11860,7 @@ generateVanillaStructures: false,
 			octaves: {count: 2, scale: 40}
 		}
 	}]
-}));
+}));*/
 //Callback.addCallback("ItemUse", function(coords, item){
 	//if(item.id==265)
 //Dimensions.transfer(Player.get(), MagicHills.id)

@@ -1,7 +1,6 @@
 TranslationLoad.js
 core/ScrutinyAPI_v2.js
 header.js 
-StructureLoader.js
 AI.js
 
 models/yes.js
@@ -67,6 +66,8 @@ block/singularity/magic_storage.js
 block/singularity/clone_scroll.js
 block/singularity/ic2.js
 block/plant.js
+
+StructureLoader.js
 
 guide_book/window.js
 guide_book/piece_basics.js
