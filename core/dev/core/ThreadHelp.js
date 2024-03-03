@@ -27,7 +27,7 @@ let ThreadHelp = {
 	}
 };
 
-Callback.addCallback("LevelDisplayed", function(){
+Callback.addCallback("ServerLevelLoaded", function(){
 	ThreadHelp.init();
 });
 Callback.addCallback("LevelLeft", function(){

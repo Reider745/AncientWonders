@@ -20,8 +20,8 @@ function getPosPolygon(r, i, n){
 	}
 }
 
-const step = 15;
-const polygon_count = 10;
+const step = 2;
+const polygon_count = 14;
 
 const points_polygon = (function(){
 	let points = [];
@@ -252,7 +252,7 @@ let NetworkSingularity = {
 	}
 };
 
-ThreadHelp.registerForGame("server-singularity-lines", NetworkSingularity.send, 600);
+ThreadHelp.registerForGame("server-singularity-lines", NetworkSingularity.send, 500);
 
 Callback.addCallback("LevelLeft", function(){
 	NetworkSingularity.lines = {};

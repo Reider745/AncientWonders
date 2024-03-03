@@ -37,12 +37,12 @@ var Wands = {
     });
     Item.registerNameOverrideFunction(obj.id, function(item, name, translation) {
     	item.extra = item.extra || new ItemExtraData();
-      name = name + "\n " + Translation.translate(Item.getName(item.extra.getInt("event", 0), item.data));
+      name = name + "\n " + Translation.translate(Item.getName(Network.serverToLocalId(item.extra.getInt("event", 0)), item.data));
       let spells = Wands.getArrByExtra(item.extra);
       for(let i in spells){
       	let spell = spells[i];
       	let id = Network.serverToLocalId(spell.id);
-      	name = name + "\n " + Wands.getPrototype(spell.id).getName(Translation.translate(Item.getName(spell.id, spell.data)), item, spell);
+      	name = name + "\n " + Wands.getPrototype(id).getName(Translation.translate(Item.getName(id, spell.data)), item, spell);
       }
     	return name;
     });

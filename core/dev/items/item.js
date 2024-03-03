@@ -244,6 +244,7 @@ Item.createFoodItem("pelmeni", "aw.item.pelmeni", {name: "dumplings", meta: 0}, 
 IDRegistry.genItemID("staff_singularity"); 
 Item.createItem("staff_singularity", "aw.item.staff_singularity", {name: "singularity", meta: 0}, {stack: 1});
 IAHelper.makeAdvancedAnim(ItemID.staff_singularity, "singularity", 1, [0, 1, 2, 3]);
+Item.setToolRender(ItemID.staff_singularity, true);
 Callback.addCallback("ItemUse", function(coords, item, block, isExter, player){
 	if(Entity.getSneaking(player) && item.id==ItemID.staff_singularity){
 		item.extra = item.extra || new ItemExtraData()

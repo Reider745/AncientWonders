@@ -84,7 +84,7 @@ const TranslationLoad = {
 					let path = String(files[i]);
 					let file = readJson(path);
 					TranslationLoad.loadJson(
-						path.replace("\\", "/").split("/").pop().split(".")[0],
+						path.split("\\").pop().split("/").pop().split(".")[0],
 						translations,
 						file
 					);

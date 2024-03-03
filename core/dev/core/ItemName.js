@@ -1,5 +1,5 @@
 if(!Game.isDedicatedServer())
-	var CustomName = WRAP_JAVA("com.core.api.Item");
+	var CustomName = com.core.api.Item;
 else
 	var CustomName = {
 		overrideName(){}
