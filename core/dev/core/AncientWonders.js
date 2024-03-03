@@ -126,18 +126,20 @@ let AncientWonders = {
 	message(player, obj, bonus, message){
 		bonus = this.mathBonus(player, bonus);
 		message = message || function(player, obj, bonus, name){
-			return TranslationLoad.get("aw.message.required_parameter", [["name", name],["level", (obj[name]-(bonus[name]||0))]])
+			return ["aw.message.required_parameter", [["name", name],["level", (obj[name]-(bonus[name]||0))]]];
 		}
 		let data = MagicCore.getValue(player);
 		let keys = Object.keys(obj);
 		for(let i in keys)
-			if(this.isFunc[keys[i]](player, obj, bonus, data, keys[i]))
-				PlayerAC.message(player, message(player, obj, bonus, keys[i]));
+			if(this.isFunc[keys[i]](player, obj, bonus, data, keys[i])){
+				let mes = message(player, obj, bonus, keys[i]);
+				translateMessage(player, mes[0], mes[1]);
+			}
 	},
 	getArrMessage(player, obj, bonus, message){
 		bonus = this.mathBonus(player, bonus);
 		message = message || function(player, obj, bonus, name){
-			return TranslationLoad.get("aw.message.required_parameter", [["name", name],["level", (obj[name]-(bonus[name]||0))]])
+			return ["aw.message.required_parameter", [["name", name],["level", (obj[name]-(bonus[name]||0))]]]
 		}
 		let data = MagicCore.getValue(player);
 		let keys = Object.keys(obj);

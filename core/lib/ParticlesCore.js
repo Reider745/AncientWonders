@@ -115,7 +115,7 @@ let ParticlesStorage = {
 })();
 
 function getVisibalePlayers(reg, x, y, z, r){
-	return reg.fetchEntitiesInAABB(x - r, y - r, z - r, x + r, y + r, z + r, EEntityType.PLAYER, false)
+	return reg.fetchEntitiesInAABB(x - r, y - r, z - r, x + r, y + r, z + r, EEntityType.PLAYER, false);
 }
 
 function forEachClientVP(d, x, y, z, r, func){

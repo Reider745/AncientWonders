@@ -1,41 +1,47 @@
 let decor = Wands.registerSrollDecoration(ItemID.decor1);
 decor.addType("usingReleased", function(packet){
 	let pos = packet.coords;
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x-.5, pos.y-.5, pos.z-.5, 0.5, 11, 2, Entity.getDimension(packet.entity));
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x-.5, pos.y-0.8-.5, pos.z-.5, 0.7, 11, 2, Entity.getDimension(packet.entity));
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x-.5, pos.y-0.3 - .5, pos.z-.5, 1.1, 11, 2, Entity.getDimension(packet.entity));
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x-.5, pos.y-0.1-.5, pos.z-.5, 1.1, 11, 2, Entity.getDimension(packet.entity));
+	let dim = Entity.getDimension(packet.entity);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x-.5, pos.y-.5, pos.z-.5, 0.5, 11, 2, dim);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x-.5, pos.y-0.8-.5, pos.z-.5, 0.7, 11, 2, dim);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x-.5, pos.y-0.3 - .5, pos.z-.5, 1.1, 11, 2, dim);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x-.5, pos.y-0.1-.5, pos.z-.5, 1.1, 11, 2, dim);
 });
 decor.addType("EntityInteract", function(packet){
 	let pos = packet.coords;
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x -.5, pos.y-1+.3, pos.z-.5, 0.5, 11, 2, Entity.getDimension(packet.entity));
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x -.6, pos.y-0.8+.3, pos.z-.5, 0.7, 11, 2, Entity.getDimension(packet.entity));
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x - .5, pos.y-0.3+.3, pos.z-.5, 1.1, 11, 2, Entity.getDimension(packet.entity));
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x -.5, pos.y-0.1+.3, pos.z-.5, 1.1, 11, 2, Entity.getDimension(packet.entity));
+	let dim = Entity.getDimension(packet.entity);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x -.5, pos.y-1+.3, pos.z-.5, 0.5, 11, 2, dim);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x -.6, pos.y-0.8+.3, pos.z-.5, 0.7, 11, 2, dim);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x - .5, pos.y-0.3+.3, pos.z-.5, 1.1, 11, 2, dim);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x -.5, pos.y-0.1+.3, pos.z-.5, 1.1, 11, 2, dim);
 });
 decor.addType("itemUse", function(packet){
 	let pos = packet.coords;
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-1+2, pos.z, 0.5, 11, 2, Entity.getDimension(packet.entity));
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.8+2, pos.z, 0.7, 11, 2, Entity.getDimension(packet.entity));
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.3+2, pos.z, 1.1, 11, 2, Entity.getDimension(packet.entity));
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.1+2, pos.z, 1.1, 11, 2, Entity.getDimension(packet.entity));
+	let dim = Entity.getDimension(packet.entity);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-1+2, pos.z, 0.5, 11, 2, dim);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.8+2, pos.z, 0.7, 11, 2, dim);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.3+2, pos.z, 1.1, 11, 2, dim);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.1+2, pos.z, 1.1, 11, 2, dim);
 });
 
 decor = Wands.registerSrollDecoration(ItemID.decor2);
 decor.addType("usingReleased", function(packet){
 	let pos = packet.coords;
+	let dim = Entity.getDimension(packet.entity);
 	for(let i = 0;i <= 10;i++)
-		ParticlesAPI.spawnCircle(ParticlesAPI.part4, pos.x-.5, pos.y+1-2.8, pos.z-.5, i / 2, 11 * i, 2, Entity.getDimension(packet.entity));
+		ParticlesAPI.spawnCircle(ParticlesAPI.part4, pos.x-.5, pos.y+1-2.8, pos.z-.5, i / 2, 11 * i, 2, dim);
 });
 decor.addType("EntityInteract", function(packet){
 	let pos = packet.coords;
+	let dim = Entity.getDimension(packet.entity);
 	for(let i = 0;i <= 10;i++)
-		ParticlesAPI.spawnCircle(ParticlesAPI.part4, pos.x - .5, pos.y-.1, pos.z-.5, i / 2, 11 * i, 2, Entity.getDimension(packet.entity));
+		ParticlesAPI.spawnCircle(ParticlesAPI.part4, pos.x - .5, pos.y-.1, pos.z-.5, i / 2, 11 * i, 2, dim);
 });
 decor.addType("itemUse", function(packet){
+	let dim = Entity.getDimension(packet.entity);
 	let pos = packet.coords;
 	for(let i = 0;i <= 10;i++)
-		ParticlesAPI.spawnCircle(ParticlesAPI.part4, pos.x, pos.y+1, pos.z, i / 2, 11 * i, 2, Entity.getDimension(packet.entity));
+		ParticlesAPI.spawnCircle(ParticlesAPI.part4, pos.x, pos.y+1, pos.z, i / 2, 11 * i, 2, dim);
 });
 
 decor = Wands.registerSrollDecoration(ItemID.decor3);

@@ -1,6 +1,7 @@
 {
 	"type": "en",
 	"translations": {
+		"aw.not_name": "Not name",
 		"aw.item.aw_potions_book": "Potions book",
 		"aw.item.aw_backpack": "Bag of Magicians",
 		"aw.item.regularbag": "An ordinary bag",

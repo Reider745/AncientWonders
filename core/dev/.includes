@@ -14,6 +14,7 @@ models/ResearchTable.js
 
 items/enchant.js
 
+core/ThreadHelp.js
 core/renderAPI.js
 core/ItemName.js
 core/MagisCore.js

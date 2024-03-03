@@ -84,10 +84,10 @@ var MagicCore = {
     			return;
     		}
     		if(scrutiny)
-    			PlayerAC.message(player, TranslationLoad.get("aw.message.give_study", [["scrutiny", scrutiny.scrutiny||"book"]]));
+    			translateMessage(player, "aw.message.give_study", [["scrutiny", scrutiny.scrutiny||"book"]]);
     		actor.setArmor(slot, 0, 0, 0, null);
     		actor.addItemToInventory(id, 1, item.data, item.extra, true);
-    		PlayerAC.message(player, TranslationLoad.get("aw.message.required_level", [["name", parameter],["level", value]]));
+    		translateMessage(player, "aw.message.required_level", [["name", parameter],["level", value]]);
     	});
     }, 
     usings: {},
@@ -120,13 +120,13 @@ var MagicCore = {
             	let item = Entity.getCarriedItem(player);
                 delItem2(player, {id:item.id,data:item.data,count:item.count});
                 cv[parameter] += value;
-                PlayerAC.message(player, TranslationLoad.get("aw.message.parameter_update", [["name", parameter],["value", value],["new", cv[parameter]]]));
+                translateMessage(player, "aw.message.parameter_update", [["name", parameter],["value", value],["new", cv[parameter]]]);
                 MagicCore.setParameters(player, cv);
             }else{
-                PlayerAC.message(player, TranslationLoad.get("aw.message.parameter_noy_update", [["name", parameter]]));
+                translateMessage(player, "aw.message.parameter_noy_update", [["name", parameter]]);
             }
         }else{
-            PlayerAC.message(player, Translation.translate("aw.message.have_class"));
+            translateMessage(player, "aw.message.have_class");
         }
     }, 
     setParameters: function (player, obj, value){
@@ -237,7 +237,7 @@ Callback.addCallback("ServerPlayerTick", function(player, isPlayerDead){
         if(MagicCore.getValue(player)[arr[0]] < arr[1]){
         	Entity.setCarriedItem(player, item.id, item.count, item.data, item.extra);
             new PlayerActor(player).setSelectedSlot(Math.floor(Math.random()*9))
-            PlayerAC.message(player, TranslationLoad.get("aw.message.required_level", [["name", arr[0]],["level", arr[1]]]));
+            translateMessage(player, "aw.message.required_level", [["name", arr[0]],["level", arr[1]]]);
         } 
     }
 });

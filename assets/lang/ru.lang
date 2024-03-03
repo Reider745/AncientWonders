@@ -1,6 +1,7 @@
 {
 	"type": "ru",
 	"translations": {
+		"aw.not_name": "Нет имени",
 		"aw.item.aw_potions_book": "Книга зельеварения",
 		"aw.item.aw_backpack": "Сумка магов",
 		"aw.item.regularbag": "Обычный мешок",

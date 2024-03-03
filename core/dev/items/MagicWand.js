@@ -355,7 +355,7 @@ Wands.setPrototype(ItemID.sroll8, {
             c.aspects -= helt;
             MagicCore.setParameters(packet.player, c);
         }else{
-            PlayerAC.message(packet.player, TranslationLoad.get("aw.message.sroll.kill", [["aspects", helt]]));
+            translateMessage(packet.player, "aw.message.sroll.kill", [["aspects", helt]]);
         }
     }, 
     installation: function (player, item){
@@ -513,11 +513,12 @@ Wands.setPrototype(ItemID.sroll16, {
         let pos = Entity.getPosition(packet.entity);
         //Entity.setVelocity(packet.entity, 0, 0, 0);
         Entity.addVelocity(packet.entity, 0, 1, 0);
-        ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-1, pos.z, 0.5, 11, 2);
-        ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.8, pos.z, 0.7, 11, 2);
+        let dim = Entity.getDimension(packet.entity);
+        ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-1, pos.z, 0.5, 11, 2, dim);
+        ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.8, pos.z, 0.7, 11, 2, dim);
         //ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.5, pos.z, 1, 11, 2);
-        ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.3, pos.z, 1.1, 11, 2);
-        ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.1, pos.z, 1.1, 11, 2);
+        ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.3, pos.z, 1.1, 11, 2, dim);
+        ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.1, pos.z, 1.1, 11, 2, dim);
         //ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y+0.1, pos.z, 1.2, 11, 2);
     }, 
     installation: function (player, item){
@@ -916,6 +917,7 @@ Wands.setPrototype(ItemID.SpellSet31, {
     },
     setFunction(packet){
 			let extra = packet.wand.extra || new ItemExtraData();
+			let player = packet.player;
 			let wand = Wands.getStick(packet.wand.id);
 			if(wand.scrutiny.enable || ScrutinyAPI.isScrutiny(player, wand.scrutiny.window, wand.scrutiny.tab, wand.scrutiny.name)){
 				let event = Wands.getPrototype(extra.getInt("event", 0));
@@ -926,7 +928,7 @@ Wands.setPrototype(ItemID.SpellSet31, {
         			
         		let prot = Wands.getPrototype(spells[i].id);
         		if(prot.scrutiny.enable && !ScrutinyAPI.isScrutiny(packet.entity, prot.scrutiny.window, prot.scrutiny.tab, prot.scrutiny.name)){
-        			PlayerAC.message(packet.entity, TranslationLoad.get("aw.message.need_study", [["name", prot.scrutiny.name]]));
+        			translateMessage(packet.entity, "aw.message.need_study", [["name", prot.scrutiny.name]]);
         			continue;
         		}
         		if(AncientWonders.isParameters(packet.entity, prot.activate, wand.bonus)){
@@ -944,19 +946,19 @@ Wands.setPrototype(ItemID.SpellSet31, {
               	prot.setFunction(packet);
         		}else{
         			AncientWonders.message(packet.entity, prot.activate, wand.bonus, function(player, obj, bonus, name){
-        			return TranslationLoad.get("aw.message.wand", [["name", name], ["value", obj[name] - (bonus[name]||0)], ["scroll", Item.getName(spells[i].id)]]);
+        			return ["aw.message.wand", [["name", name], ["value", obj[name] - (bonus[name]||0)], ["scroll", Item.getName(spells[i].id)]]];
         		})
         		}
         	}else{
-        		PlayerAC.message(packet.entity, TranslationLoad.get("aw.message.wand.not_compatible_with", [["event", Item.getName(extra.getInt("event", 0))],["scroll", Item.getName(spells[i].id)]]));
+        		translateMessage(packet.entity, "aw.message.wand.not_compatible_with", [["event", Item.getName(extra.getInt("event", 0))],["scroll", Item.getName(spells[i].id)]]);
         	}
         }
 			}else{
-      	PlayerAC.message(player, TranslationLoad.get("aw.message.need_study", [["name", wand.scrutiny.name]]));
+      	translateMessage(player, "aw.message.need_study", [["name", wand.scrutiny.name]]);
 			}
     },
     getName(name, wand, item){
-    	return name + item.extra.getString("name", "нет имени")
+    	return name + item.extra.getString("name", Translation.translate("aw.not_name"))
     },
     installation: function (player, item){
         delItem(player, item);

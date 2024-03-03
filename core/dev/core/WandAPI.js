@@ -40,7 +40,9 @@ var Wands = {
       name = name + "\n " + Translation.translate(Item.getName(item.extra.getInt("event", 0), item.data));
       let spells = Wands.getArrByExtra(item.extra);
       for(let i in spells){
-      	name = name + "\n " + Wands.getPrototype(spells[i].id).getName(Translation.translate(Item.getName(spells[i].id, spells[i].data)), item, spells[i]);
+      	let spell = spells[i];
+      	let id = Network.serverToLocalId(spell.id);
+      	name = name + "\n " + Wands.getPrototype(spell.id).getName(Translation.translate(Item.getName(spell.id, spell.data)), item, spell);
       }
     	return name;
     });
@@ -104,10 +106,10 @@ var Wands = {
 					return;
 				
 				let event = Wands.getPrototype(extra.getInt("event", 0));
-				if(event.event!= name)
+				if(event.event != name)
 					return;
 				if(extra.getInt("event", 0)==0){
-        	PlayerAC.message(player, Translation.translate("aw.message.use_empty"));
+        	translateMessage(player, "aw.message.use_empty");
         	return;
         }else if(wand.sound){
         	playSound(wand.sound, player, 16);
@@ -123,7 +125,7 @@ var Wands = {
         			
         		let prot = Wands.getPrototype(spells[i].id);
         		if(prot.scrutiny.enable && !ScrutinyAPI.isScrutiny(player, prot.scrutiny.window, prot.scrutiny.tab, prot.scrutiny.name)){
-        			PlayerAC.message(player, TranslationLoad.get("aw.message.need_study", [["name", prot.scrutiny.name]]));
+        			translateMessage(player, "aw.message.need_study", [["name", prot.scrutiny.name]]);
         			continue;
         		}
         		if(AncientWonders.isParameters(player, prot.activate, wand.bonus)){
@@ -157,25 +159,25 @@ var Wands = {
               	prot.setFunction(packet);
         		}else{
         			AncientWonders.message(player, prot.activate, wand.bonus, function(player, obj, bonus, name){
-        			return TranslationLoad.get("aw.message.wand", [["name", name], ["value", obj[name] - (bonus[name]||0)], ["scroll", Item.getName(spells[i].id)]]);
+        			return ["aw.message.wand", [["name", name], ["value", obj[name] - (bonus[name]||0)], ["scroll", Item.getName(spells[i].id)]]];
         		})
         		}
         	}else{
-        		PlayerAC.message(player, TranslationLoad.get("aw.message.wand.not_compatible_with", [["event", Item.getName(extra.getInt("event", 0))],["scroll", Item.getName(spells[i].id)]]));
+        		translateMessage(player, "aw.message.wand.not_compatible_with", [["event", Item.getName(extra.getInt("event", 0))],["scroll", Item.getName(spells[i].id)]]);
         	}
         }
         if(spells.length == 0){
-        	PlayerAC.message(player, Translation.translate("aw.message.use_empty"));
+        	translateMessage(player, "aw.message.use_empty");
         }
         
         delete players_use_wand[player];
 			}else{
-      	PlayerAC.message(player, TranslationLoad.get("aw.message.need_study", [["name", wand.scrutiny.name]]));
+      	translateMessage(player, "aw.message.need_study", [["name", wand.scrutiny.name]]);
 			}
 		}
 		}catch(e){
 			alert(e)
-			Logger.LogError(e);
+			Logger.Log(e);
 			Logger.Flush();
 			delete players_use_wand[player];
 		}
@@ -430,97 +432,3 @@ Callback.addCallback("EntityInteract", function(entity, player){
 	if(EffectAPI.getLevel(player, "noy_magic") <= 0)
 		Wands.addEvent(item, player, "EntityInteract", {coordsOriginal: Entity.getPosition(entity), block: {id:0,data:0}, player: player, entity: entity});
 });
-var ProjectTile = {
-    reg: function(name){
-        return new GameObject("ProjectID"+name, {
-            init: function(player, part, vec, pos){
-                this.player = player;
-                this.pos = pos;
-                this.vec = vec;
-                this.vec.x/=2;
-                this.vec.y/=2;
-                this.vec.z/=2;
-                this.part = part;
-                this.time = 0;
-            },
-            update: function(){
-                this.pos.x += this.vec.x;
-                this.pos.y += this.vec.y;
-                this.pos.z += this.vec.z;
-                Mp.spawnParticle(this.part, this.pos.x, this.pos.y, this.pos.z, 0, 0, 0);
-                let ents = Entity.getAllInRange(this.pos, 2);
-                for(let i in ents){
-                    if(this.player != ents[i]){
-                        MagicCore.damage(ents[i], "magic", 8);
-                    }
-                }
-                let block = BlockSource.getDefaultForActor(this.player).getBlock(this.pos.x, this.pos.y, this.pos.z);
-                if(block.id != 0){
-                    this.destroy();
-                }else if(!World.canTileBeReplaced(block.id, block.data)){
-                    this.destroy();
-                }
-                this.time++;
-                if(this.time >= 150){
-                    this.destroy();
-                }
-            }
-        });
-    },
-    regStarfall: function(name){
-        return new GameObject("ProjectID"+name, {
-            init: function(player, part, vec, pos){
-                this.player = player;
-                this.pos = pos;
-                this.vec = vec;
-                this.vec.x/=2;
-                this.vec.y/=2;
-                this.vec.z/=2;
-                this.part = part;
-                this.time = 0;
-            },
-            update: function(){
-                this.pos.x += this.vec.x;
-                this.pos.y += this.vec.y;
-                this.pos.z += this.vec.z;
-                Mp.spawnParticle(this.part, this.pos.x, this.pos.y, this.pos.z, 0, 0, 0);
-                let ents = Entity.getAllInRange(this.pos, 2);
-                for(let i in ents){
-                    if(this.player != ents[i]){
-                        MagicCore.damage(ents[i], "magic", 10);
-                    }
-                }
-                let block = BlockSource.getDefaultForActor(this.player).getBlock(this.pos.x, this.pos.y, this.pos.z);
-                if(block.id != 0){
-                    for(let i = 0;i <= 13;i++){
-                        ents = Entity.getAllInRange(this.pos, 10);
-                        for(let i in ents){
-                            if(this.player != ents[i]){
-                                MagicCore.damage(ents[i], "magic", 20);
-                            }
-                        }
-                         ParticlesAPI.spawnCircle(ParticlesAPI.part2, this.pos.x, this.pos.y+(0.2*i)+1, this.pos.z, i / 1.3, 11 * i, 2);
-                    }
-                    this.destroy();
-                }else if(!World.canTileBeReplaced(block.id, block.data)){
-                    for(let i = 0;i <= 13;i++){
-                        ents = Entity.getAllInRange(this.pos, 10);
-                        for(let i in ents){
-                            if(this.player != ents[i]){
-                                MagicCore.damage(ents[i], "magic", 40);
-                            }
-                        }
-                         ParticlesAPI.spawnCircle(ParticlesAPI.part3, this.pos.x, this.pos.y+(0.2*i)+1, this.pos.z, i / 1.3, 11 * i, 2);
-                    }
-                    this.destroy();
-                }
-                this.time++;
-                if(this.time >= 150){
-                    this.destroy();
-                }
-            }
-        });
-    }
-};
-let part = ProjectTile.reg("fire-project");
-let starfall = ProjectTile.regStarfall("starfall-project");

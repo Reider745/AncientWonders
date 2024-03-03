@@ -112,9 +112,9 @@ let SingularityLines = {
 		return x1+":"+y1+":"+z1+":"+x2+":"+y2+":"+z2;
 	},
 	
-	add(x1, y1, z1, x2, y2, z2){
+	add(dim, x1, y1, z1, x2, y2, z2){
 		let key = this.buildKey(x1-.5, y1-.5, z1-.5, x2-.5, y2-.5, z2-.5);
-		let obj = {visibility: false, mesh: buildLineMesh(x1, y1, z1, x2, y2, z2), key: key}
+		let obj = {visibility: false, mesh: buildLineMesh(x1, y1, z1, x2, y2, z2), key: key, dim: dim}
 		this.lines[key] = obj;
 		return obj;
 	},
@@ -137,10 +137,12 @@ let SingularityLines = {
 	
 	update(){ 
 		this.mesh.clear();
-		
+		let is = Player.getArmorSlot(GLASSEES_SLOT).id == ItemID.aw_glasses && Player.getCarriedItem().id == ItemID.staff_singularity;
+		let current_dim = Player.getDimension();
+	
 		for(let key in this.lines){
 			let obj = this.lines[key];
-			if(obj.visibility)
+			if(obj.dim == current_dim && (obj.visibility || is))
 				this.mesh.addMesh(obj.mesh, 0, 0, 0);
 		}
 		
@@ -155,7 +157,7 @@ let SingularityLines = {
 		this.events = {
 			addLine(data){
 				let lines = this.lines = this.lines || {};
-				let line = SingularityLines.add(this.x+.5, this.y+.5, this.z+.5, data.x+.5, data.y+.5, data.z+.5);
+				let line = SingularityLines.add(this.dimension, this.x+.5, this.y+.5, this.z+.5, data.x+.5, data.y+.5, data.z+.5);
 				lines[line.key] = line;
 			},
 			visibility(data){
@@ -165,6 +167,9 @@ let SingularityLines = {
 					lines[SingularityLines.buildKey(this.x, this.y, this.z, pos.x, pos.y, pos.z)].visibility = data.status;
 				}
 				SingularityLines.update();
+			},
+			remove(data){
+				SingularityLines.remove(data.key);
 			}
 		}
 		
@@ -179,6 +184,10 @@ let SingularityLines = {
 		tile.networkEntity.send("addLine", {x: x, y: y, z: z});
 	},
 	
+	removeLineForTile(tile, pos){
+		tile.networkEntity.send("remove", pos);
+	},
+	
 	visibilityLineForTile(tile, lines){
 		tile.networkEntity.send("visibility", {lines: lines, status: true});
 	},
@@ -188,8 +197,6 @@ let SingularityLines = {
 	}
 };
 
-const Thread = java.lang.Thread;
-const SINGULARITY_TIME_SLEEP = 500;
 const RADIUS_VISIBILITY = 35;
 
 Network.addClientPacket("aw.singularity_lines_update", function(lines){
@@ -200,18 +207,6 @@ Network.addClientPacket("aw.singularity_lines_update", function(lines){
 
 let NetworkSingularity = {
 	lines: {},
-	startGame: false,
-	
-	init(){
-		this.startGame = true;
-
-		Threading.initThread("server-singularity-lines", function(){
-			while(NetworkSingularity.startGame){
-				NetworkSingularity.send();
-				Thread.sleep(SINGULARITY_TIME_SLEEP);
-			}
-		});
-	},
 	
 	visibilityLineForTile(tile, line){
 		let lines = this.lines[tile.dimension] = this.lines[tile.dimension] || {};
@@ -226,9 +221,10 @@ let NetworkSingularity = {
 	},
 	
 	send(){
+		let list = NetworkSingularity.lines;
 		let players = Network.getConnectedPlayers();
-		for(let key in this.lines){
-			let lines = this.lines[key];
+		for(let key in list){
+			let lines = list[key];
 			let dimension = Number(key);
 			
 			for(let i in players){
@@ -256,36 +252,11 @@ let NetworkSingularity = {
 	}
 };
 
-Callback.addCallback("LevelDisplayed", function(){
-	NetworkSingularity.init();
-});
+ThreadHelp.registerForGame("server-singularity-lines", NetworkSingularity.send, 600);
+
 Callback.addCallback("LevelLeft", function(){
 	NetworkSingularity.lines = {};
-	NetworkSingularity.startGame = false;
 });
-
-/*let coords_item_use = [0, 0, 0];
-let first = true;
-let animation_ = new Animation.Base(0, 0, 0);
-
-Callback.addCallback("ItemUse", function(coords, item, block, is, player){
-	if(item.id != 263) return;
-	
-	if(first){
-		coords_item_use = coords;
-		first = false;
-	}else{
-		let mesh = buildLineMesh(coords_item_use.x+.5, coords_item_use.y+.5, coords_item_use.z+.5, coords.x+.5, coords.y+.5, coords.z+.5);
-		
-		animation_.describe({
-			mesh: mesh,
-			material: "aspects_transfer_aw"
-		});
-		animation_.load();
-		
-		first = true;
-	}
-});*/
 
 const base_transfer = function(output, tile){
 //	let angle = Entity.get
@@ -312,24 +283,15 @@ let SingularityAPI = {
 		return this.output[name] && this.output[name][id];
 	},
 	
-	getTiles(arr, region){
-		let tiles = [];
-		for(let i in arr){
-			let tile = World.getTileEntity(arr[i].x, arr[i].y, arr[i].z, region);
-			if(!tile) tile = World.addTileEntity(arr[i].x, arr[i].y, arr[i].z, region)
-			tiles.push(tile);
-		}
-		return tiles;
-	},
 	transfersBlock(tile, tiles, value, pos){
-		if(tile.data.aspect - value > 0 && tiles && tiles.blockSource && tiles.data.aspect+value <= tiles.data.aspectMax){
+		if(tile.data.aspect - value > 0 && tiles.blockSource && tiles.data.aspect+value <= tiles.data.aspectMax){
 			tile.data.aspect-=value;
 			tiles.data.aspect+=value;
 			
 			tile.data.activated = World.getThreadTime();
 			return NetworkSingularity.visibilityLineForTile(tile, pos);
 		}
-		if(!tiles || !tile.data.activated || World.getThreadTime() - tile.data.activated > 20)
+		if(!tile.data.activated || World.getThreadTime() - tile.data.activated > 20)
 			NetworkSingularity.hidenLineForTile(tile, pos);
 	},
 	
@@ -342,14 +304,22 @@ let SingularityAPI = {
 	}, 
 	
 	transfers(tile, value){
+		let tiles = [];
 		let arr = tile.data.arr || [];
 		value /= arr.length;
 		
 		for(let i in arr){
 			let pos = arr[i];
 			
-			this.transfersBlock(tile, World.getTileEntity(pos.x, pos.y, pos.z, tile.blockSource), value, pos);
+			let input = World.getTileEntity(pos.x, pos.y, pos.z, tile.blockSource);
+			if(input && this.isInputs("base", input.blockID)){
+				this.transfersBlock(tile, input, value, pos);
+				tiles.push(pos);
+			}else
+				SingularityLines.removeLineForTile(tile, pos);
 		}
+		
+		tile.data.arr = tiles;
 	},
 	
 	click(tile, coords, player){
@@ -365,21 +335,23 @@ let SingularityAPI = {
 		}
 
 		pos.key = SingularityLines.buildKey(tile.x, tile.y, tile.z, pos.x, pos.y, pos.z);
-		alert(pos.key)
 		SingularityLines.addLineForTile(tile, pos.x, pos.y, pos.z);
 		tile.data.arr.push(pos);
+	},
+	
+	getPosForStaff(extra){
+		return  {
+			x: extra.getInt("x", 0),
+			y: extra.getInt("y", 0),
+			z: extra.getInt("z", 0)
+		};
 	},
 	
 	itemUse(player, item, block, count, coords, bool){
 		bool = bool || false;
 		let region = BlockSource.getDefaultForActor(player);
 		if(!Entity.getSneaking(player) && item.id == ItemID.staff_singularity && this.isOutputs("base", block)){
-			item.extra = item.extra || new ItemExtraData();
-			let pos = {
-				x: item.extra.getInt("x", 0),
-				y: item.extra.getInt("y", 0),
-				z: item.extra.getInt("z", 0)
-			};
+			let pos = this.getPosForStaff(item.extra || new ItemExtraData());
 			if(Entity.getDistanceBetweenCoords(pos, coords) > count || !this.isInputs("base", region.getBlockId(pos.x, pos.y, pos.z))){
 				translateTipMessage(player, "aw.tip_message.binding_staff_singularity_error", [["value", count]]);
 				return null;

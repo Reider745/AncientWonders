@@ -2,7 +2,7 @@
 BUILD INFO:
   dir: core/dev
   target: main.js
-  files: 86
+  files: 87
 */
 
 
@@ -2043,6 +2043,47 @@ addEnchant(magic_damage.id, 3);
 
 
 
+// file: core/ThreadHelp.js
+
+const Thread = java.lang.Thread;
+
+let ThreadHelp = {
+	threads: {},
+	startGame: false,
+	
+	init(){
+		this.startGame = true;
+		
+		for(let name in this.threads){
+			let arr = this.threads[name];
+			
+			let func = arr[0];
+			let period = arr[1];
+	
+			Threading.initThread(name, function(){
+				while(ThreadHelp.startGame){
+					func();
+					Thread.sleep(period);
+				}
+			});
+		}
+	},
+	
+	registerForGame(name, func, period){
+		this.threads[name] = [func, period||1000];
+	}
+};
+
+Callback.addCallback("LevelDisplayed", function(){
+	ThreadHelp.init();
+});
+Callback.addCallback("LevelLeft", function(){
+	ThreadHelp.startGame = false;
+});
+
+
+
+
 // file: core/renderAPI.js
 
 let RenderAPILegacy = {
@@ -2358,10 +2399,10 @@ var MagicCore = {
     			return;
     		}
     		if(scrutiny)
-    			PlayerAC.message(player, TranslationLoad.get("aw.message.give_study", [["scrutiny", scrutiny.scrutiny||"book"]]));
+    			translateMessage(player, "aw.message.give_study", [["scrutiny", scrutiny.scrutiny||"book"]]);
     		actor.setArmor(slot, 0, 0, 0, null);
     		actor.addItemToInventory(id, 1, item.data, item.extra, true);
-    		PlayerAC.message(player, TranslationLoad.get("aw.message.required_level", [["name", parameter],["level", value]]));
+    		translateMessage(player, "aw.message.required_level", [["name", parameter],["level", value]]);
     	});
     }, 
     usings: {},
@@ -2394,13 +2435,13 @@ var MagicCore = {
             	let item = Entity.getCarriedItem(player);
                 delItem2(player, {id:item.id,data:item.data,count:item.count});
                 cv[parameter] += value;
-                PlayerAC.message(player, TranslationLoad.get("aw.message.parameter_update", [["name", parameter],["value", value],["new", cv[parameter]]]));
+                translateMessage(player, "aw.message.parameter_update", [["name", parameter],["value", value],["new", cv[parameter]]]);
                 MagicCore.setParameters(player, cv);
             }else{
-                PlayerAC.message(player, TranslationLoad.get("aw.message.parameter_noy_update", [["name", parameter]]));
+                translateMessage(player, "aw.message.parameter_noy_update", [["name", parameter]]);
             }
         }else{
-            PlayerAC.message(player, Translation.translate("aw.message.have_class"));
+            translateMessage(player, "aw.message.have_class");
         }
     }, 
     setParameters: function (player, obj, value){
@@ -2511,7 +2552,7 @@ Callback.addCallback("ServerPlayerTick", function(player, isPlayerDead){
         if(MagicCore.getValue(player)[arr[0]] < arr[1]){
         	Entity.setCarriedItem(player, item.id, item.count, item.data, item.extra);
             new PlayerActor(player).setSelectedSlot(Math.floor(Math.random()*9))
-            PlayerAC.message(player, TranslationLoad.get("aw.message.required_level", [["name", arr[0]],["level", arr[1]]]));
+            translateMessage(player, "aw.message.required_level", [["name", arr[0]],["level", arr[1]]]);
         } 
     }
 });
@@ -3258,18 +3299,20 @@ let AncientWonders = {
 	message(player, obj, bonus, message){
 		bonus = this.mathBonus(player, bonus);
 		message = message || function(player, obj, bonus, name){
-			return TranslationLoad.get("aw.message.required_parameter", [["name", name],["level", (obj[name]-(bonus[name]||0))]])
+			return ["aw.message.required_parameter", [["name", name],["level", (obj[name]-(bonus[name]||0))]]];
 		}
 		let data = MagicCore.getValue(player);
 		let keys = Object.keys(obj);
 		for(let i in keys)
-			if(this.isFunc[keys[i]](player, obj, bonus, data, keys[i]))
-				PlayerAC.message(player, message(player, obj, bonus, keys[i]));
+			if(this.isFunc[keys[i]](player, obj, bonus, data, keys[i])){
+				let mes = message(player, obj, bonus, keys[i]);
+				translateMessage(player, mes[0], mes[1]);
+			}
 	},
 	getArrMessage(player, obj, bonus, message){
 		bonus = this.mathBonus(player, bonus);
 		message = message || function(player, obj, bonus, name){
-			return TranslationLoad.get("aw.message.required_parameter", [["name", name],["level", (obj[name]-(bonus[name]||0))]])
+			return ["aw.message.required_parameter", [["name", name],["level", (obj[name]-(bonus[name]||0))]]]
 		}
 		let data = MagicCore.getValue(player);
 		let keys = Object.keys(obj);
@@ -3603,7 +3646,9 @@ var Wands = {
       name = name + "\n " + Translation.translate(Item.getName(item.extra.getInt("event", 0), item.data));
       let spells = Wands.getArrByExtra(item.extra);
       for(let i in spells){
-      	name = name + "\n " + Wands.getPrototype(spells[i].id).getName(Translation.translate(Item.getName(spells[i].id, spells[i].data)), item, spells[i]);
+      	let spell = spells[i];
+      	let id = Network.serverToLocalId(spell.id);
+      	name = name + "\n " + Wands.getPrototype(spell.id).getName(Translation.translate(Item.getName(spell.id, spell.data)), item, spell);
       }
     	return name;
     });
@@ -3667,10 +3712,10 @@ var Wands = {
 					return;
 				
 				let event = Wands.getPrototype(extra.getInt("event", 0));
-				if(event.event!= name)
+				if(event.event != name)
 					return;
 				if(extra.getInt("event", 0)==0){
-        	PlayerAC.message(player, Translation.translate("aw.message.use_empty"));
+        	translateMessage(player, "aw.message.use_empty");
         	return;
         }else if(wand.sound){
         	playSound(wand.sound, player, 16);
@@ -3686,7 +3731,7 @@ var Wands = {
         			
         		let prot = Wands.getPrototype(spells[i].id);
         		if(prot.scrutiny.enable && !ScrutinyAPI.isScrutiny(player, prot.scrutiny.window, prot.scrutiny.tab, prot.scrutiny.name)){
-        			PlayerAC.message(player, TranslationLoad.get("aw.message.need_study", [["name", prot.scrutiny.name]]));
+        			translateMessage(player, "aw.message.need_study", [["name", prot.scrutiny.name]]);
         			continue;
         		}
         		if(AncientWonders.isParameters(player, prot.activate, wand.bonus)){
@@ -3720,25 +3765,25 @@ var Wands = {
               	prot.setFunction(packet);
         		}else{
         			AncientWonders.message(player, prot.activate, wand.bonus, function(player, obj, bonus, name){
-        			return TranslationLoad.get("aw.message.wand", [["name", name], ["value", obj[name] - (bonus[name]||0)], ["scroll", Item.getName(spells[i].id)]]);
+        			return ["aw.message.wand", [["name", name], ["value", obj[name] - (bonus[name]||0)], ["scroll", Item.getName(spells[i].id)]]];
         		})
         		}
         	}else{
-        		PlayerAC.message(player, TranslationLoad.get("aw.message.wand.not_compatible_with", [["event", Item.getName(extra.getInt("event", 0))],["scroll", Item.getName(spells[i].id)]]));
+        		translateMessage(player, "aw.message.wand.not_compatible_with", [["event", Item.getName(extra.getInt("event", 0))],["scroll", Item.getName(spells[i].id)]]);
         	}
         }
         if(spells.length == 0){
-        	PlayerAC.message(player, Translation.translate("aw.message.use_empty"));
+        	translateMessage(player, "aw.message.use_empty");
         }
         
         delete players_use_wand[player];
 			}else{
-      	PlayerAC.message(player, TranslationLoad.get("aw.message.need_study", [["name", wand.scrutiny.name]]));
+      	translateMessage(player, "aw.message.need_study", [["name", wand.scrutiny.name]]);
 			}
 		}
 		}catch(e){
 			alert(e)
-			Logger.LogError(e);
+			Logger.Log(e);
 			Logger.Flush();
 			delete players_use_wand[player];
 		}
@@ -3993,100 +4038,6 @@ Callback.addCallback("EntityInteract", function(entity, player){
 	if(EffectAPI.getLevel(player, "noy_magic") <= 0)
 		Wands.addEvent(item, player, "EntityInteract", {coordsOriginal: Entity.getPosition(entity), block: {id:0,data:0}, player: player, entity: entity});
 });
-var ProjectTile = {
-    reg: function(name){
-        return new GameObject("ProjectID"+name, {
-            init: function(player, part, vec, pos){
-                this.player = player;
-                this.pos = pos;
-                this.vec = vec;
-                this.vec.x/=2;
-                this.vec.y/=2;
-                this.vec.z/=2;
-                this.part = part;
-                this.time = 0;
-            },
-            update: function(){
-                this.pos.x += this.vec.x;
-                this.pos.y += this.vec.y;
-                this.pos.z += this.vec.z;
-                Mp.spawnParticle(this.part, this.pos.x, this.pos.y, this.pos.z, 0, 0, 0);
-                let ents = Entity.getAllInRange(this.pos, 2);
-                for(let i in ents){
-                    if(this.player != ents[i]){
-                        MagicCore.damage(ents[i], "magic", 8);
-                    }
-                }
-                let block = BlockSource.getDefaultForActor(this.player).getBlock(this.pos.x, this.pos.y, this.pos.z);
-                if(block.id != 0){
-                    this.destroy();
-                }else if(!World.canTileBeReplaced(block.id, block.data)){
-                    this.destroy();
-                }
-                this.time++;
-                if(this.time >= 150){
-                    this.destroy();
-                }
-            }
-        });
-    },
-    regStarfall: function(name){
-        return new GameObject("ProjectID"+name, {
-            init: function(player, part, vec, pos){
-                this.player = player;
-                this.pos = pos;
-                this.vec = vec;
-                this.vec.x/=2;
-                this.vec.y/=2;
-                this.vec.z/=2;
-                this.part = part;
-                this.time = 0;
-            },
-            update: function(){
-                this.pos.x += this.vec.x;
-                this.pos.y += this.vec.y;
-                this.pos.z += this.vec.z;
-                Mp.spawnParticle(this.part, this.pos.x, this.pos.y, this.pos.z, 0, 0, 0);
-                let ents = Entity.getAllInRange(this.pos, 2);
-                for(let i in ents){
-                    if(this.player != ents[i]){
-                        MagicCore.damage(ents[i], "magic", 10);
-                    }
-                }
-                let block = BlockSource.getDefaultForActor(this.player).getBlock(this.pos.x, this.pos.y, this.pos.z);
-                if(block.id != 0){
-                    for(let i = 0;i <= 13;i++){
-                        ents = Entity.getAllInRange(this.pos, 10);
-                        for(let i in ents){
-                            if(this.player != ents[i]){
-                                MagicCore.damage(ents[i], "magic", 20);
-                            }
-                        }
-                         ParticlesAPI.spawnCircle(ParticlesAPI.part2, this.pos.x, this.pos.y+(0.2*i)+1, this.pos.z, i / 1.3, 11 * i, 2);
-                    }
-                    this.destroy();
-                }else if(!World.canTileBeReplaced(block.id, block.data)){
-                    for(let i = 0;i <= 13;i++){
-                        ents = Entity.getAllInRange(this.pos, 10);
-                        for(let i in ents){
-                            if(this.player != ents[i]){
-                                MagicCore.damage(ents[i], "magic", 40);
-                            }
-                        }
-                         ParticlesAPI.spawnCircle(ParticlesAPI.part3, this.pos.x, this.pos.y+(0.2*i)+1, this.pos.z, i / 1.3, 11 * i, 2);
-                    }
-                    this.destroy();
-                }
-                this.time++;
-                if(this.time >= 150){
-                    this.destroy();
-                }
-            }
-        });
-    }
-};
-let part = ProjectTile.reg("fire-project");
-let starfall = ProjectTile.regStarfall("starfall-project");
 
 
 
@@ -4468,9 +4419,9 @@ let SingularityLines = {
 		return x1+":"+y1+":"+z1+":"+x2+":"+y2+":"+z2;
 	},
 	
-	add(x1, y1, z1, x2, y2, z2){
+	add(dim, x1, y1, z1, x2, y2, z2){
 		let key = this.buildKey(x1-.5, y1-.5, z1-.5, x2-.5, y2-.5, z2-.5);
-		let obj = {visibility: false, mesh: buildLineMesh(x1, y1, z1, x2, y2, z2), key: key}
+		let obj = {visibility: false, mesh: buildLineMesh(x1, y1, z1, x2, y2, z2), key: key, dim: dim}
 		this.lines[key] = obj;
 		return obj;
 	},
@@ -4493,10 +4444,12 @@ let SingularityLines = {
 	
 	update(){ 
 		this.mesh.clear();
-		
+		let is = Player.getArmorSlot(GLASSEES_SLOT).id == ItemID.aw_glasses && Player.getCarriedItem().id == ItemID.staff_singularity;
+		let current_dim = Player.getDimension();
+	
 		for(let key in this.lines){
 			let obj = this.lines[key];
-			if(obj.visibility)
+			if(obj.dim == current_dim && (obj.visibility || is))
 				this.mesh.addMesh(obj.mesh, 0, 0, 0);
 		}
 		
@@ -4511,7 +4464,7 @@ let SingularityLines = {
 		this.events = {
 			addLine(data){
 				let lines = this.lines = this.lines || {};
-				let line = SingularityLines.add(this.x+.5, this.y+.5, this.z+.5, data.x+.5, data.y+.5, data.z+.5);
+				let line = SingularityLines.add(this.dimension, this.x+.5, this.y+.5, this.z+.5, data.x+.5, data.y+.5, data.z+.5);
 				lines[line.key] = line;
 			},
 			visibility(data){
@@ -4521,6 +4474,9 @@ let SingularityLines = {
 					lines[SingularityLines.buildKey(this.x, this.y, this.z, pos.x, pos.y, pos.z)].visibility = data.status;
 				}
 				SingularityLines.update();
+			},
+			remove(data){
+				SingularityLines.remove(data.key);
 			}
 		}
 		
@@ -4535,6 +4491,10 @@ let SingularityLines = {
 		tile.networkEntity.send("addLine", {x: x, y: y, z: z});
 	},
 	
+	removeLineForTile(tile, pos){
+		tile.networkEntity.send("remove", pos);
+	},
+	
 	visibilityLineForTile(tile, lines){
 		tile.networkEntity.send("visibility", {lines: lines, status: true});
 	},
@@ -4544,8 +4504,6 @@ let SingularityLines = {
 	}
 };
 
-const Thread = java.lang.Thread;
-const SINGULARITY_TIME_SLEEP = 500;
 const RADIUS_VISIBILITY = 35;
 
 Network.addClientPacket("aw.singularity_lines_update", function(lines){
@@ -4556,18 +4514,6 @@ Network.addClientPacket("aw.singularity_lines_update", function(lines){
 
 let NetworkSingularity = {
 	lines: {},
-	startGame: false,
-	
-	init(){
-		this.startGame = true;
-
-		Threading.initThread("server-singularity-lines", function(){
-			while(NetworkSingularity.startGame){
-				NetworkSingularity.send();
-				Thread.sleep(SINGULARITY_TIME_SLEEP);
-			}
-		});
-	},
 	
 	visibilityLineForTile(tile, line){
 		let lines = this.lines[tile.dimension] = this.lines[tile.dimension] || {};
@@ -4582,9 +4528,10 @@ let NetworkSingularity = {
 	},
 	
 	send(){
+		let list = NetworkSingularity.lines;
 		let players = Network.getConnectedPlayers();
-		for(let key in this.lines){
-			let lines = this.lines[key];
+		for(let key in list){
+			let lines = list[key];
 			let dimension = Number(key);
 			
 			for(let i in players){
@@ -4612,36 +4559,11 @@ let NetworkSingularity = {
 	}
 };
 
-Callback.addCallback("LevelDisplayed", function(){
-	NetworkSingularity.init();
-});
+ThreadHelp.registerForGame("server-singularity-lines", NetworkSingularity.send, 600);
+
 Callback.addCallback("LevelLeft", function(){
 	NetworkSingularity.lines = {};
-	NetworkSingularity.startGame = false;
 });
-
-/*let coords_item_use = [0, 0, 0];
-let first = true;
-let animation_ = new Animation.Base(0, 0, 0);
-
-Callback.addCallback("ItemUse", function(coords, item, block, is, player){
-	if(item.id != 263) return;
-	
-	if(first){
-		coords_item_use = coords;
-		first = false;
-	}else{
-		let mesh = buildLineMesh(coords_item_use.x+.5, coords_item_use.y+.5, coords_item_use.z+.5, coords.x+.5, coords.y+.5, coords.z+.5);
-		
-		animation_.describe({
-			mesh: mesh,
-			material: "aspects_transfer_aw"
-		});
-		animation_.load();
-		
-		first = true;
-	}
-});*/
 
 const base_transfer = function(output, tile){
 //	let angle = Entity.get
@@ -4668,24 +4590,15 @@ let SingularityAPI = {
 		return this.output[name] && this.output[name][id];
 	},
 	
-	getTiles(arr, region){
-		let tiles = [];
-		for(let i in arr){
-			let tile = World.getTileEntity(arr[i].x, arr[i].y, arr[i].z, region);
-			if(!tile) tile = World.addTileEntity(arr[i].x, arr[i].y, arr[i].z, region)
-			tiles.push(tile);
-		}
-		return tiles;
-	},
 	transfersBlock(tile, tiles, value, pos){
-		if(tile.data.aspect - value > 0 && tiles && tiles.blockSource && tiles.data.aspect+value <= tiles.data.aspectMax){
+		if(tile.data.aspect - value > 0 && tiles.blockSource && tiles.data.aspect+value <= tiles.data.aspectMax){
 			tile.data.aspect-=value;
 			tiles.data.aspect+=value;
 			
 			tile.data.activated = World.getThreadTime();
 			return NetworkSingularity.visibilityLineForTile(tile, pos);
 		}
-		if(!tiles || !tile.data.activated || World.getThreadTime() - tile.data.activated > 20)
+		if(!tile.data.activated || World.getThreadTime() - tile.data.activated > 20)
 			NetworkSingularity.hidenLineForTile(tile, pos);
 	},
 	
@@ -4698,14 +4611,22 @@ let SingularityAPI = {
 	}, 
 	
 	transfers(tile, value){
+		let tiles = [];
 		let arr = tile.data.arr || [];
 		value /= arr.length;
 		
 		for(let i in arr){
 			let pos = arr[i];
 			
-			this.transfersBlock(tile, World.getTileEntity(pos.x, pos.y, pos.z, tile.blockSource), value, pos);
+			let input = World.getTileEntity(pos.x, pos.y, pos.z, tile.blockSource);
+			if(input && this.isInputs("base", input.blockID)){
+				this.transfersBlock(tile, input, value, pos);
+				tiles.push(pos);
+			}else
+				SingularityLines.removeLineForTile(tile, pos);
 		}
+		
+		tile.data.arr = tiles;
 	},
 	
 	click(tile, coords, player){
@@ -4721,21 +4642,23 @@ let SingularityAPI = {
 		}
 
 		pos.key = SingularityLines.buildKey(tile.x, tile.y, tile.z, pos.x, pos.y, pos.z);
-		alert(pos.key)
 		SingularityLines.addLineForTile(tile, pos.x, pos.y, pos.z);
 		tile.data.arr.push(pos);
+	},
+	
+	getPosForStaff(extra){
+		return  {
+			x: extra.getInt("x", 0),
+			y: extra.getInt("y", 0),
+			z: extra.getInt("z", 0)
+		};
 	},
 	
 	itemUse(player, item, block, count, coords, bool){
 		bool = bool || false;
 		let region = BlockSource.getDefaultForActor(player);
 		if(!Entity.getSneaking(player) && item.id == ItemID.staff_singularity && this.isOutputs("base", block)){
-			item.extra = item.extra || new ItemExtraData();
-			let pos = {
-				x: item.extra.getInt("x", 0),
-				y: item.extra.getInt("y", 0),
-				z: item.extra.getInt("z", 0)
-			};
+			let pos = this.getPosForStaff(item.extra || new ItemExtraData());
 			if(Entity.getDistanceBetweenCoords(pos, coords) > count || !this.isInputs("base", region.getBlockId(pos.x, pos.y, pos.z))){
 				translateTipMessage(player, "aw.tip_message.binding_staff_singularity_error", [["value", count]]);
 				return null;
@@ -6041,41 +5964,47 @@ Item.addCreativeGroup("decor", Translation.translate("aw.creative_group.decor"),
 let decor = Wands.registerSrollDecoration(ItemID.decor1);
 decor.addType("usingReleased", function(packet){
 	let pos = packet.coords;
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x-.5, pos.y-.5, pos.z-.5, 0.5, 11, 2, Entity.getDimension(packet.entity));
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x-.5, pos.y-0.8-.5, pos.z-.5, 0.7, 11, 2, Entity.getDimension(packet.entity));
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x-.5, pos.y-0.3 - .5, pos.z-.5, 1.1, 11, 2, Entity.getDimension(packet.entity));
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x-.5, pos.y-0.1-.5, pos.z-.5, 1.1, 11, 2, Entity.getDimension(packet.entity));
+	let dim = Entity.getDimension(packet.entity);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x-.5, pos.y-.5, pos.z-.5, 0.5, 11, 2, dim);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x-.5, pos.y-0.8-.5, pos.z-.5, 0.7, 11, 2, dim);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x-.5, pos.y-0.3 - .5, pos.z-.5, 1.1, 11, 2, dim);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x-.5, pos.y-0.1-.5, pos.z-.5, 1.1, 11, 2, dim);
 });
 decor.addType("EntityInteract", function(packet){
 	let pos = packet.coords;
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x -.5, pos.y-1+.3, pos.z-.5, 0.5, 11, 2, Entity.getDimension(packet.entity));
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x -.6, pos.y-0.8+.3, pos.z-.5, 0.7, 11, 2, Entity.getDimension(packet.entity));
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x - .5, pos.y-0.3+.3, pos.z-.5, 1.1, 11, 2, Entity.getDimension(packet.entity));
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x -.5, pos.y-0.1+.3, pos.z-.5, 1.1, 11, 2, Entity.getDimension(packet.entity));
+	let dim = Entity.getDimension(packet.entity);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x -.5, pos.y-1+.3, pos.z-.5, 0.5, 11, 2, dim);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x -.6, pos.y-0.8+.3, pos.z-.5, 0.7, 11, 2, dim);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x - .5, pos.y-0.3+.3, pos.z-.5, 1.1, 11, 2, dim);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x -.5, pos.y-0.1+.3, pos.z-.5, 1.1, 11, 2, dim);
 });
 decor.addType("itemUse", function(packet){
 	let pos = packet.coords;
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-1+2, pos.z, 0.5, 11, 2, Entity.getDimension(packet.entity));
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.8+2, pos.z, 0.7, 11, 2, Entity.getDimension(packet.entity));
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.3+2, pos.z, 1.1, 11, 2, Entity.getDimension(packet.entity));
-	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.1+2, pos.z, 1.1, 11, 2, Entity.getDimension(packet.entity));
+	let dim = Entity.getDimension(packet.entity);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-1+2, pos.z, 0.5, 11, 2, dim);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.8+2, pos.z, 0.7, 11, 2, dim);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.3+2, pos.z, 1.1, 11, 2, dim);
+	ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.1+2, pos.z, 1.1, 11, 2, dim);
 });
 
 decor = Wands.registerSrollDecoration(ItemID.decor2);
 decor.addType("usingReleased", function(packet){
 	let pos = packet.coords;
+	let dim = Entity.getDimension(packet.entity);
 	for(let i = 0;i <= 10;i++)
-		ParticlesAPI.spawnCircle(ParticlesAPI.part4, pos.x-.5, pos.y+1-2.8, pos.z-.5, i / 2, 11 * i, 2, Entity.getDimension(packet.entity));
+		ParticlesAPI.spawnCircle(ParticlesAPI.part4, pos.x-.5, pos.y+1-2.8, pos.z-.5, i / 2, 11 * i, 2, dim);
 });
 decor.addType("EntityInteract", function(packet){
 	let pos = packet.coords;
+	let dim = Entity.getDimension(packet.entity);
 	for(let i = 0;i <= 10;i++)
-		ParticlesAPI.spawnCircle(ParticlesAPI.part4, pos.x - .5, pos.y-.1, pos.z-.5, i / 2, 11 * i, 2, Entity.getDimension(packet.entity));
+		ParticlesAPI.spawnCircle(ParticlesAPI.part4, pos.x - .5, pos.y-.1, pos.z-.5, i / 2, 11 * i, 2, dim);
 });
 decor.addType("itemUse", function(packet){
+	let dim = Entity.getDimension(packet.entity);
 	let pos = packet.coords;
 	for(let i = 0;i <= 10;i++)
-		ParticlesAPI.spawnCircle(ParticlesAPI.part4, pos.x, pos.y+1, pos.z, i / 2, 11 * i, 2, Entity.getDimension(packet.entity));
+		ParticlesAPI.spawnCircle(ParticlesAPI.part4, pos.x, pos.y+1, pos.z, i / 2, 11 * i, 2, dim);
 });
 
 decor = Wands.registerSrollDecoration(ItemID.decor3);
@@ -6727,7 +6656,7 @@ Wands.setPrototype(ItemID.sroll8, {
             c.aspects -= helt;
             MagicCore.setParameters(packet.player, c);
         }else{
-            PlayerAC.message(packet.player, TranslationLoad.get("aw.message.sroll.kill", [["aspects", helt]]));
+            translateMessage(packet.player, "aw.message.sroll.kill", [["aspects", helt]]);
         }
     }, 
     installation: function (player, item){
@@ -6885,11 +6814,12 @@ Wands.setPrototype(ItemID.sroll16, {
         let pos = Entity.getPosition(packet.entity);
         //Entity.setVelocity(packet.entity, 0, 0, 0);
         Entity.addVelocity(packet.entity, 0, 1, 0);
-        ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-1, pos.z, 0.5, 11, 2);
-        ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.8, pos.z, 0.7, 11, 2);
+        let dim = Entity.getDimension(packet.entity);
+        ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-1, pos.z, 0.5, 11, 2, dim);
+        ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.8, pos.z, 0.7, 11, 2, dim);
         //ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.5, pos.z, 1, 11, 2);
-        ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.3, pos.z, 1.1, 11, 2);
-        ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.1, pos.z, 1.1, 11, 2);
+        ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.3, pos.z, 1.1, 11, 2, dim);
+        ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y-0.1, pos.z, 1.1, 11, 2, dim);
         //ParticlesAPI.spawnCircle(ParticlesAPI.part1, pos.x, pos.y+0.1, pos.z, 1.2, 11, 2);
     }, 
     installation: function (player, item){
@@ -7288,6 +7218,7 @@ Wands.setPrototype(ItemID.SpellSet31, {
     },
     setFunction(packet){
 			let extra = packet.wand.extra || new ItemExtraData();
+			let player = packet.player;
 			let wand = Wands.getStick(packet.wand.id);
 			if(wand.scrutiny.enable || ScrutinyAPI.isScrutiny(player, wand.scrutiny.window, wand.scrutiny.tab, wand.scrutiny.name)){
 				let event = Wands.getPrototype(extra.getInt("event", 0));
@@ -7298,7 +7229,7 @@ Wands.setPrototype(ItemID.SpellSet31, {
         			
         		let prot = Wands.getPrototype(spells[i].id);
         		if(prot.scrutiny.enable && !ScrutinyAPI.isScrutiny(packet.entity, prot.scrutiny.window, prot.scrutiny.tab, prot.scrutiny.name)){
-        			PlayerAC.message(packet.entity, TranslationLoad.get("aw.message.need_study", [["name", prot.scrutiny.name]]));
+        			translateMessage(packet.entity, "aw.message.need_study", [["name", prot.scrutiny.name]]);
         			continue;
         		}
         		if(AncientWonders.isParameters(packet.entity, prot.activate, wand.bonus)){
@@ -7316,19 +7247,19 @@ Wands.setPrototype(ItemID.SpellSet31, {
               	prot.setFunction(packet);
         		}else{
         			AncientWonders.message(packet.entity, prot.activate, wand.bonus, function(player, obj, bonus, name){
-        			return TranslationLoad.get("aw.message.wand", [["name", name], ["value", obj[name] - (bonus[name]||0)], ["scroll", Item.getName(spells[i].id)]]);
+        			return ["aw.message.wand", [["name", name], ["value", obj[name] - (bonus[name]||0)], ["scroll", Item.getName(spells[i].id)]]];
         		})
         		}
         	}else{
-        		PlayerAC.message(packet.entity, TranslationLoad.get("aw.message.wand.not_compatible_with", [["event", Item.getName(extra.getInt("event", 0))],["scroll", Item.getName(spells[i].id)]]));
+        		translateMessage(packet.entity, "aw.message.wand.not_compatible_with", [["event", Item.getName(extra.getInt("event", 0))],["scroll", Item.getName(spells[i].id)]]);
         	}
         }
 			}else{
-      	PlayerAC.message(player, TranslationLoad.get("aw.message.need_study", [["name", wand.scrutiny.name]]));
+      	translateMessage(player, "aw.message.need_study", [["name", wand.scrutiny.name]]);
 			}
     },
     getName(name, wand, item){
-    	return name + item.extra.getString("name", "нет имени")
+    	return name + item.extra.getString("name", Translation.translate("aw.not_name"))
     },
     installation: function (player, item){
         delItem(player, item);
@@ -7911,7 +7842,7 @@ function getBlocks(pos, region, radius, id, tile){
 	for(let x = pos.x - radius;x < pos.x + radius;x++)
 		for(let y = pos.y - radius;y < pos.y + radius;y++)
 			for(let z = pos.z - radius;z < pos.z + radius;z++)
-				if(region.getBlock(x,y,z).id == id)
+				if(region.getBlockId(x,y,z) == id)
 					if(tile){
 						let te = TileEntity.getTileEntity(x, y, z, region);
 						arr.push([x, y, z, (te||{}).data || {}]);
@@ -7922,52 +7853,95 @@ function getBlocks(pos, region, radius, id, tile){
  
 (function(){
 	let cache = {};
+	let singularity_staff;
+	let model = new RenderUtil.Model();
+	let size = 1/16
+	
+	model.add(0, 0, 0, 1, size, size);
+	model.add(0, 0, 0, size, size, 1);
+	model.add(1-size, 0, size, 1, size, 1);
+	model.add(size, 0, 1-size, 1, size, 1);
+	
+	model.add(0, 1-size, 0, 1, 1, size);
+	model.add(0, 1-size, 0, size, 1, 1);
+	model.add(1-size, 1-size, size, 1, 1, 1);
+	model.add(size, 1-size, 1-size, 1, 1, 1);
+	
+	model.add(0, size, 0, size, 1-size, size);
+	model.add(1-size, size, 1-size, 1, 1-size, 1);
+	model.add(1-size, 0, 0, 1, 1-size, size);
+	model.add(0, 0, 1-size, size, 1-size, 1);
+	
+	let meshStaff = model.getRenderMesh();
+	
 	Network.addClientPacket("aw.glasses.update", function(data){
-		let keys = Object.keys(cache);
-		for(let i in keys)
-			cache[keys[i]].destroy();
+		for(let key in cache)
+			cache[key].destroy();
 		cache = {};
+		singularity_staff && singularity_staff.destroy();
+		
+		let item = Player.getCarriedItem();
+		if(item.id == ItemID.staff_singularity){
+			let pos = SingularityAPI.getPosForStaff(item.extra || new ItemExtraData());
+			singularity_staff = new Animation.Base(pos.x+.5, pos.y+.5, pos.z+.5);
+			singularity_staff.describe({
+					mesh: meshStaff,
+					material: "aspects_transfer_aw"
+			});
+			singularity_staff.load();
+			return;
+		}else if(!Potion.isIngredient(item))
+			return;
+		
+		
 		for(let i in data){
+			let info = data[i];
 			let pos = {
-				x: Math.floor(data[i][0]),
-				y: Math.floor(data[i][1]),
-				z: Math.floor(data[i][2])
+				x: Math.floor(info[0]),
+				y: Math.floor(info[1]),
+				z: Math.floor(info[2])
 			};
-			let id = pos.x+"."+pos.y+"."+pos.z;
-			let item = Entity.getCarriedItem(Player.get());
-			if(!Potion.isIngredient(item))
-				continue;
-			data[i][3].items = data[i][3].items || [];
-			cache[id] = new Animation.Base(pos.x+.5, pos.y+1.7, pos.z+.5);
-			cache[id].describe({
-				mesh: Potion.isIngredientInstallation(pos, item, Player.get(), data[i][3]) ?Glasses.getModelYes() : Glasses.getModelNoy(),
+				
+			let items = info[3].items || [];
+			let anim = cache[pos.x+"."+pos.y+"."+pos.z] = new Animation.Base(pos.x+.5, pos.y+1.7, pos.z+.5);
+			anim.describe({
+				mesh: Potion.isIngredientInstallation(pos, item, Player.get(), {
+					items: items
+				}) ? Glasses.getModelYes() : Glasses.getModelNoy(),
 				skin: "terrain-atlas/concrete_white.png"
 			});
-			cache[id].load();
+			anim.load();
 		}
 	});
 	Network.addClientPacket("aw.glasses.end", function(data){
-		let keys = Object.keys(cache);
-		for(let i in keys)
-			cache[keys[i]].destroy();
+		for(let key in cache)
+			cache[key].destroy();
 		cache = {};
+		singularity_staff && singularity_staff.destroy();
 	});
 })();
 
-Armor.registerOnTickListener(ItemID.aw_glasses, function(item, slot, player){
-	if(World.getThreadTime() % 5 == 0){
-		let region = BlockSource.getDefaultForActor(player);
-		let arr = getBlocks(Entity.getPosition(player), 
-			region, 3, BlockID.cauldronAw, true);
-		let client = Network.getClientForPlayer(player);
-		if(client)
-			client.send("aw.glasses.update", arr);
+
+const GLASSEES_SLOT = Native.ArmorType.helmet;
+ThreadHelp.registerForGame("aw-glasses", function(){
+	let players = Network.getConnectedPlayers();
+	for(let p in players){
+		let player = players[p];
+		
+		let item = Entity.getArmorSlot(player, GLASSEES_SLOT);
+		if(item.id == ItemID.aw_glasses){
+			let region = BlockSource.getDefaultForActor(player);
+			let arr = getBlocks(Entity.getPosition(player), region, 3, BlockID.cauldronAw, true);
+		
+			let client = Network.getClientForPlayer(player);
+			client && client.send("aw.glasses.update", arr);
+		}
 	}
-});
+}, 5 / 20 * 1000);
+
 Armor.registerOnTakeOffListener(ItemID.aw_glasses, function(item, slot, player){
 	let client = Network.getClientForPlayer(player);
-	if(client)
-		client.send("aw.glasses.end", {});
+	client && client.send("aw.glasses.end", {});
 })
 
 
@@ -9861,33 +9835,24 @@ TileEntity.registerPrototype(BlockID.ancient_bottom_obelisk, {
 		aspect: 0,
 		aspectMax: 1000
 	},
-	getEnts(){
-		let mobs = [];
-		let ents = Entity.getAllInRange({x:this.x,y:this.y,z:this.z}, 8);
-		for(let i in ents){
-			if(Network.getConnectedPlayers().indexOf(ents[i]) != -1 && Entity.getDimension(ents[i])==this.dimension)
-				mobs.push(ents[i])
-		}
-		return mobs;
-	},
 	tick(){
-		//if(World.getThreadTime()%__config__.get("tickUpdate")==0){
-			if(this.data.aspect-this.data.add>=.1 && this.data.add!=0){
-				let ents = this.getEnts();
-				for(let i in ents){
-					if(ScrutinyAPI.isScrutiny(ents[i], "aw", "basics", "singularity")){
-						let c = MagicCore.getValue(ents[i])
-						let pos = Entity.getPosition(ents[i]);
-						if(c.aspects+this.data.add <= c.aspectsNow){
-							this.data.aspect-=this.data.add;
-							c.aspects+=this.data.add;
-							 ParticlesAPI.coords(ParticlesAPI.part2, this.x, this.y, this.z, pos.x, pos.y, pos.z, 40, this.dimension)
-						}
-						MagicCore.setParameters(ents[i], c, false);
+		if(this.data.aspect-this.data.add > 0 &&  this.data.add != 0){
+			let ents = this.blockSource.fetchEntitiesInAABB(this.x - 8, this.y - 8, this.z - 8, this.x + 8, this.y + 8, this.z + 8, EEntityType.PLAYER, false);
+			for(let i in ents){
+				let ent = ents[i];
+				
+				if(ScrutinyAPI.isScrutiny(ents[i], "aw", "basics", "singularity")){
+					let c = MagicCore.getValue(ent);
+					let pos = Entity.getPosition(ent);
+					if(c.aspects + this.data.add <= c.aspectsNow){
+						this.data.aspect -= this.data.add;
+						c.aspects += this.data.add;
+							ParticlesAPI.coords(ParticlesAPI.part2, this.x, this.y, this.z, pos.x, pos.y, pos.z, 30, this.dimension)
 					}
+					MagicCore.setParameters(ent, c, false);
 				}
 			}
-		//}
+		}
 	}
 });
 

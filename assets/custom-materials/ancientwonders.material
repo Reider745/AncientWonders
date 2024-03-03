@@ -17,8 +17,8 @@
 	"potion_aw:aw_base": {
 		"fragmentShader": "./potion_item.frag.c"
 	},
-	"aspects_transfer_aw:entity_alphatest_custom": {
-		"fragmentShader": "./aspects_transfer.frag.c",
-		"vertexShader": "./aspects_transfer.vert.c"
+	"aspects_transfer_aw:aw_base": {
+		"vertexShader": "./aspects_transfer.vert.c",
+		"fragmentShader": "./aspects_transfer.frag.c"
 	}
 }

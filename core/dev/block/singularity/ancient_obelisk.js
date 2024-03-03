@@ -33,33 +33,24 @@ TileEntity.registerPrototype(BlockID.ancient_bottom_obelisk, {
 		aspect: 0,
 		aspectMax: 1000
 	},
-	getEnts(){
-		let mobs = [];
-		let ents = Entity.getAllInRange({x:this.x,y:this.y,z:this.z}, 8);
-		for(let i in ents){
-			if(Network.getConnectedPlayers().indexOf(ents[i]) != -1 && Entity.getDimension(ents[i])==this.dimension)
-				mobs.push(ents[i])
-		}
-		return mobs;
-	},
 	tick(){
-		//if(World.getThreadTime()%__config__.get("tickUpdate")==0){
-			if(this.data.aspect-this.data.add>=.1 && this.data.add!=0){
-				let ents = this.getEnts();
-				for(let i in ents){
-					if(ScrutinyAPI.isScrutiny(ents[i], "aw", "basics", "singularity")){
-						let c = MagicCore.getValue(ents[i])
-						let pos = Entity.getPosition(ents[i]);
-						if(c.aspects+this.data.add <= c.aspectsNow){
-							this.data.aspect-=this.data.add;
-							c.aspects+=this.data.add;
-							 ParticlesAPI.coords(ParticlesAPI.part2, this.x, this.y, this.z, pos.x, pos.y, pos.z, 40, this.dimension)
-						}
-						MagicCore.setParameters(ents[i], c, false);
+		if(this.data.aspect-this.data.add > 0 &&  this.data.add != 0){
+			let ents = this.blockSource.fetchEntitiesInAABB(this.x - 8, this.y - 8, this.z - 8, this.x + 8, this.y + 8, this.z + 8, EEntityType.PLAYER, false);
+			for(let i in ents){
+				let ent = ents[i];
+				
+				if(ScrutinyAPI.isScrutiny(ents[i], "aw", "basics", "singularity")){
+					let c = MagicCore.getValue(ent);
+					let pos = Entity.getPosition(ent);
+					if(c.aspects + this.data.add <= c.aspectsNow){
+						this.data.aspect -= this.data.add;
+						c.aspects += this.data.add;
+							ParticlesAPI.coords(ParticlesAPI.part2, this.x, this.y, this.z, pos.x, pos.y, pos.z, 30, this.dimension)
 					}
+					MagicCore.setParameters(ent, c, false);
 				}
 			}
-		//}
+		}
 	}
 });
 
