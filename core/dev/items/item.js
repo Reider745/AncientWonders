@@ -189,10 +189,10 @@ Item.registerUseFunctionForID(ItemID.loreClass1, function(coords, item, block, p
                 message: true
             });
         }else{
-            PlayerAC.message(player, Translation.translate("aw.message.cannot_class"));
+            translateMessage(player, "aw.message.cannot_class");
         }
         }else{
-            PlayerAC.message(player, TranslationLoad.get("aw.message.need_study", [["name", "classMage"]]));
+            translateMessage(player, "aw.message.need_study", [["name", "classMage"]]);
         }
     }
 });
@@ -209,10 +209,10 @@ Item.registerUseFunctionForID(ItemID.loreClass2, function(coords, item, block, p
                 message: true 
             });
         }else{
-            PlayerAC.message(player, Translation.translate("aw.message.cannot_class"));
+            translateMessage(player, "aw.message.cannot_class");
         }
         }else{
-            PlayerAC.message(player, TranslationLoad.get("aw.message.need_study", [["name", "classWarrior"]]));
+            translateMessage(player, "aw.message.need_study", [["name", "classWarrior"]]);
         }
     }
 });
@@ -229,10 +229,10 @@ Item.registerUseFunctionForID(ItemID.loreClass3, function(coords, item, block, p
                 message: true
             });
         }else{
-            PlayerAC.message(player, Translation.translate("aw.message.cannot_class"));
+            translateMessage(player, "aw.message.cannot_class");
         }
         }else{
-            PlayerAC.message(player, TranslationLoad.get("aw.message.need_study", [["name", "classNecromancer"]]));
+            translateMessage(player, "aw.message.need_study", [["name", "classNecromancer"]]);
 
         }
     }
@@ -251,7 +251,7 @@ Callback.addCallback("ItemUse", function(coords, item, block, isExter, player){
 		item.extra.putInt("x", coords.x);
 		item.extra.putInt("y", coords.y);
 		item.extra.putInt("z", coords.z);
-		Mp.tipMessage(player, Translation.translate("aw.tip_message.staff_singularity"))
+		translateTipMessage(player, "aw.tip_message.staff_singularity");
 		Entity.setCarriedItem(player, item.id, item.count, item.data, item.extra)
 	}
 })
@@ -267,7 +267,7 @@ Callback.addCallback("ItemUse", function(coords, item, block, isExter, player){
 			ParticlesAPI.spawnCircle(ParticlesAPI.part4, coords.x, coords.y+1, coords.z, i / 2, 11 * i, 2, Entity.getDimension(player));
 		let mob = BlockSource.getDefaultForActor(player).spawnEntity(coords.x, coords.y + 1, coords.z, "aw:tanatos");
 		Entity.setCarriedItem(mob, ItemID.aw_dead, 1, 0);
-   Entity.setCarriedItem(player, 0, 0, 0);
+  	Entity.setCarriedItem(player, 0, 0, 0);
 	}
 });
 
@@ -368,15 +368,15 @@ Callback.addCallback("ItemUse", function(coords, item, block, isExter, player){
     if(item.id == ItemID.piece4 && item.extra){
         if(ScrutinyAPI.giveScrutiny(player, ""+item.extra.getString("window", "aw"), ""+item.extra.getString("tab", "magic"), ""+item.extra.getString("name", "name"), true)){
             Entity.setCarriedItem(player, 0, 0, 0, null);
-            PlayerAC.message(player, TranslationLoad.get("aw.message.scrutiny", [["name", item.extra.getString("name2", "name")]]));
+            translateMessage(player, "aw.message.scrutiny", [["name", item.extra.getString("name2", "name")]]);
         }else{
-        	PlayerAC.message(player, TranslationLoad.get("aw.message.scrutiny_give_noy", [["name", item.extra.getString("name2", "name")]]));
+        	translateMessage(player, "aw.message.scrutiny_give_noy", [["name", item.extra.getString("name2", "name")]]);
         }
     }else if(item.id == ItemID.piece4){
         for(let i in arrScrut){
             ScrutinyAPI.giveScrutiny(player, arrScrut[i].win, arrScrut[i].tab, arrScrut[i].name, false);
         }
-        PlayerAC.message(player, Translation.translate("aw.message.scrutiny_all"));
+        translateMessage(player, "aw.message.scrutiny_all");
     }
 });
 Item.addCreativeGroup("scrutiny", Translation.translate("aw.creative_group.scrutiny"), [

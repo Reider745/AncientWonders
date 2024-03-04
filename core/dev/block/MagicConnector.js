@@ -1,7 +1,7 @@
 IDRegistry.genBlockID("MagicConnector");
 Block.createBlock("MagicConnector", [ {name: "aw.block.magic_connector", texture: [["MagicReenactor", 0], ["MagicReenactor", 1],["MagicReenactor", 0]], inCreative: true} ], {
-base: 5,
-sound: "wood"
+	base: 5,
+	sound: "wood"
 });
 
 ToolAPI.registerBlockMaterial(BlockID.MagicConnector, "wood", 0);
@@ -115,7 +115,7 @@ TileEntity.registerPrototype(BlockID.MagicConnector, {
                    this.data.item.extra = Wands.getExtraByArr(arr);
                    this.data.item.extra.putInt("event", event);
                   }else{
-                  	PlayerAC.message(player, Translation.translate("aw.message.scroll_max"));
+                  	translateMessage(player, "aw.message.scroll_max");
                   }
                    
                 }

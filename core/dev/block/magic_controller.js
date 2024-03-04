@@ -57,6 +57,7 @@ TileEntity.registerPrototype(BlockID.magicController, {
     },
     click: function(id, data, count, coords, player){
         if(ScrutinyAPI.isScrutiny(player, "aw", "basics", "MagicController")){
+        	Game.prevent();
         let slot = this.container.getSlot("slot");
         if(Wands.stick[slot.id] && id == ItemID.bookk && this.data.storage >= 50){
             this.data.storage -= 50;
@@ -112,7 +113,7 @@ TileEntity.registerPrototype(BlockID.magicController, {
             slot.extra.putString("name", name);
         }
         }else{
-            PlayerAC.message(player, TranslationLoad.get("aw.message.need_study", [["name", "MagicController"]]));
+            translateMessage(player, "aw.message.need_study", [["name", "MagicController"]]);
         }
     },
     getScreenName: function(player, coords){

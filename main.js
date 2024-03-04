@@ -95,7 +95,7 @@ const TranslationLoad = {
 					let path = String(files[i]);
 					let file = readJson(path);
 					TranslationLoad.loadJson(
-						path.replace("\\", "/").split("/").pop().split(".")[0],
+						path.split("\\").pop().split("/").pop().split(".")[0],
 						translations,
 						file
 					);
@@ -2074,7 +2074,7 @@ let ThreadHelp = {
 	}
 };
 
-Callback.addCallback("LevelDisplayed", function(){
+Callback.addCallback("ServerLevelLoaded", function(){
 	ThreadHelp.init();
 });
 Callback.addCallback("LevelLeft", function(){
@@ -2257,7 +2257,7 @@ __plantVertex: [
 // file: core/ItemName.js
 
 if(!Game.isDedicatedServer())
-	var CustomName = WRAP_JAVA("com.core.api.Item");
+	var CustomName = com.core.api.Item;
 else
 	var CustomName = {
 		overrideName(){}
@@ -3063,9 +3063,30 @@ Item.createItem("bookk", "aw.item.book", {name: "book", meta: 0}, {stack: 1});
 IDRegistry.genItemID("scrutiny_book");
 Item.createItem("scrutiny_book", "aw.item.scrutiny_book", {name: "scrutiny_book", meta: 0}, {stack: 1});
 
-Network.addClientPacket("aw.open", function(packetData) {
-    new UI.Container().openAs(new UI.StandartWindow(packetData.gui));
-});
+void function(){
+	let book = new Book("book_class");
+	
+	function addText(page, text, size){
+		page.add(true, "text", text, new Text()
+				.setSize(size));
+	}
+
+	Network.addClientPacket("aw.book_class", function(data){
+		let page = new Page();
+	
+		addText(page, "aw.gui.book_title", 1.5);
+		
+		let draws = BookAPI.draws[data.name] || {};
+		let player = Player.get();
+		let i = 0;
+		
+		for(let key in draws)
+			addText(page, draws[key](data, player, i++, key), 1.1);
+	
+		book.addPage("default", page);
+		book.openClient();
+	});
+}();
 
 let BookAPI = {
 	draws: {},
@@ -3074,97 +3095,42 @@ let BookAPI = {
 			this.draws[ClassName] = {};
 		this.draws[ClassName][parameter] = func;
 	},
-	getGui(player){
-		let c = MagicCore.getValue(player);
-		let elem = {
-			"close": {type: "closeButton", x: 930, y: 10, bitmap: "btn_close", scale: 3}, 
-			"title": {type: "text", x: 50, y: 40, text: Translation.translate("aw.gui.book_title"), font: {size: 20}},
-		};
-		if(!this.draws[c.name]) 
-			this.draws[c.name] = {};
-		let keys = Object.keys(this.draws[c.name]);
-		let x = 50;
-		let y = 65;
-		for(let i in keys){
-			let output = this.draws[c.name][keys[i]](c, player, i, keys[i]);
-				elem["text"+i] = {type: "text", text: output, x: x, y: y, font:{size:15}};
-				y+=18;
-				if(y >= UI.getScreenHeight()){
-					x = 550;
-					y = 40;
-				}
-		}
-  	return {
-  		standart: {
-  			background: {
-  				bitmap: "book_background",
-  				color: android.graphics.Color.argb(256, 0, 0, 0)
-  			}
-  		},
-  		drawing: [],
-  		elements: elem
-  	};
-	},
+	
 	copy(new_class, org_class){
-		if(!this.draws[new_class])
-			this.draws[new_class] = {};
-		if(!this.draws[org_class])
-			this.draws[org_class] = {};
-		let keys = Object.keys(this.draws[org_class]);
-		for(let i in keys)
-			this.draws[new_class][keys[i]] = this.draws[org_class][keys[i]];
+		let draws = this.draws;
+		
+		if(!draws[new_class])
+			draws[new_class] = {};
+			
+		if(!draws[org_class])
+			draws[org_class] = {};
+			
+		for(let key in draws[org_class])
+			draws[new_class][key] = draws[org_class][key];
 	},
 	open(player){
 		let client = Network.getClientForPlayer(player);
-    if(client){
-   	 client.send("aw.open", {
-     	 player: player,
-     	 gui: BookAPI.getGui(player)
-      }); 
-    }
+		client && client.send("aw.book_class", MagicCore.getValue(player));
 	}
 };
+
 BookAPI.drawFunc("noy", "message", function(classData, player, i, nameParameter){
 	return Translation.translate("aw.gui.book_class_noy")
 });
-/*(function(){
-	let playerClass = ["mage", "warrior", "necromancer"];
-for(let i in playerClass){
-BookAPI.drawFunc(playerClass[i], "name", function(classData, player, i, nameParameter){
-	return Translation.translate("aw.gui.book_class") + ": "+classData["name"]
-});
-BookAPI.drawFunc(playerClass[i], "magic", function(classData, player, i, nameParameter){
-	return Translation.translate("magic") + ": "+classData["magic"]+"/"+classData["magicMax"]
-});
-BookAPI.drawFunc(playerClass[i], "protection", function(classData, player, i, nameParameter){
-	return Translation.translate("protection") + ": "+classData["protection"]+"/"+classData["protectionMax"]
-});
-BookAPI.drawFunc(playerClass[i], "necromancer", function(classData, player, i, nameParameter){
-	return Translation.translate("necromancer") + ": "+classData["necromancer"]+"/"+classData["necromancerMax"]
-});
-BookAPI.drawFunc(playerClass[i], "aspects", function(classData, player, i, nameParameter){
-	return Translation.translate("aspects") + ": "+classData["aspectsNow"]+"/"+classData["aspectsMax"]
-});
-}})();*/
-Callback.addCallback("ItemUse", function(coords, item, block, isExternal, player){
-    if(item.id == ItemID.bookk && block.id != BlockID.MagicConnector && block.id != BlockID.magicController){
-        if(ScrutinyAPI.isScrutiny(player, "aw", "basics", "book")){
-    var client = Network.getClientForPlayer(player);
-        if(client) {
-            if(!Entity.getSneaking(player)){
-                if(RitualAPI.pedestals.indexOf(block.id) == -1){
-                BookAPI.open(player);
-                } 
-          }else{
-            let c = MagicCore.getValue(player);
-               PlayerAC.message(player, c.aspects + "/" + c.aspectsNow);
-            }
-        }
-        }else{
-        PlayerAC.message(player, TranslationLoad.get("aw.message.need_study", [["name", "book"]]));
-    }
-    }
-});
+
+Callback.addCallback("ItemUse", function(coords, item, block, is, player){
+	alert(Game.isActionPrevented())
+	if(item.id == ItemID.bookk && !Game.isActionPrevented() && RitualAPI.pedestals.indexOf(block.id) == -1){
+		if(ScrutinyAPI.isScrutiny(player, "aw", "basics", "book")){
+			if(Entity.getSneaking(player)){
+				let data = MagicCore.getValue(player);
+				translateMessage(player, data.aspects + "/" + data.aspectsNow);
+			}else
+				BookAPI.open(player)
+		}else
+			translateMessage(player, "aw.message.need_study", [["name", "book"]]);
+	}
+}, -10);
 
 
 
@@ -3643,12 +3609,12 @@ var Wands = {
     });
     Item.registerNameOverrideFunction(obj.id, function(item, name, translation) {
     	item.extra = item.extra || new ItemExtraData();
-      name = name + "\n " + Translation.translate(Item.getName(item.extra.getInt("event", 0), item.data));
+      name = name + "\n " + Translation.translate(Item.getName(Network.serverToLocalId(item.extra.getInt("event", 0)), item.data));
       let spells = Wands.getArrByExtra(item.extra);
       for(let i in spells){
       	let spell = spells[i];
       	let id = Network.serverToLocalId(spell.id);
-      	name = name + "\n " + Wands.getPrototype(spell.id).getName(Translation.translate(Item.getName(spell.id, spell.data)), item, spell);
+      	name = name + "\n " + Wands.getPrototype(id).getName(Translation.translate(Item.getName(id, spell.data)), item, spell);
       }
     	return name;
     });
@@ -4327,8 +4293,8 @@ function getPosPolygon(r, i, n){
 	}
 }
 
-const step = 15;
-const polygon_count = 10;
+const step = 2;
+const polygon_count = 14;
 
 const points_polygon = (function(){
 	let points = [];
@@ -4559,7 +4525,7 @@ let NetworkSingularity = {
 	}
 };
 
-ThreadHelp.registerForGame("server-singularity-lines", NetworkSingularity.send, 600);
+ThreadHelp.registerForGame("server-singularity-lines", NetworkSingularity.send, 500);
 
 Callback.addCallback("LevelLeft", function(){
 	NetworkSingularity.lines = {};
@@ -5148,10 +5114,10 @@ Item.registerUseFunctionForID(ItemID.loreClass1, function(coords, item, block, p
                 message: true
             });
         }else{
-            PlayerAC.message(player, Translation.translate("aw.message.cannot_class"));
+            translateMessage(player, "aw.message.cannot_class");
         }
         }else{
-            PlayerAC.message(player, TranslationLoad.get("aw.message.need_study", [["name", "classMage"]]));
+            translateMessage(player, "aw.message.need_study", [["name", "classMage"]]);
         }
     }
 });
@@ -5168,10 +5134,10 @@ Item.registerUseFunctionForID(ItemID.loreClass2, function(coords, item, block, p
                 message: true 
             });
         }else{
-            PlayerAC.message(player, Translation.translate("aw.message.cannot_class"));
+            translateMessage(player, "aw.message.cannot_class");
         }
         }else{
-            PlayerAC.message(player, TranslationLoad.get("aw.message.need_study", [["name", "classWarrior"]]));
+            translateMessage(player, "aw.message.need_study", [["name", "classWarrior"]]);
         }
     }
 });
@@ -5188,10 +5154,10 @@ Item.registerUseFunctionForID(ItemID.loreClass3, function(coords, item, block, p
                 message: true
             });
         }else{
-            PlayerAC.message(player, Translation.translate("aw.message.cannot_class"));
+            translateMessage(player, "aw.message.cannot_class");
         }
         }else{
-            PlayerAC.message(player, TranslationLoad.get("aw.message.need_study", [["name", "classNecromancer"]]));
+            translateMessage(player, "aw.message.need_study", [["name", "classNecromancer"]]);
 
         }
     }
@@ -5203,13 +5169,14 @@ Item.createFoodItem("pelmeni", "aw.item.pelmeni", {name: "dumplings", meta: 0}, 
 IDRegistry.genItemID("staff_singularity"); 
 Item.createItem("staff_singularity", "aw.item.staff_singularity", {name: "singularity", meta: 0}, {stack: 1});
 IAHelper.makeAdvancedAnim(ItemID.staff_singularity, "singularity", 1, [0, 1, 2, 3]);
+Item.setToolRender(ItemID.staff_singularity, true);
 Callback.addCallback("ItemUse", function(coords, item, block, isExter, player){
 	if(Entity.getSneaking(player) && item.id==ItemID.staff_singularity){
 		item.extra = item.extra || new ItemExtraData()
 		item.extra.putInt("x", coords.x);
 		item.extra.putInt("y", coords.y);
 		item.extra.putInt("z", coords.z);
-		Mp.tipMessage(player, Translation.translate("aw.tip_message.staff_singularity"))
+		translateTipMessage(player, "aw.tip_message.staff_singularity");
 		Entity.setCarriedItem(player, item.id, item.count, item.data, item.extra)
 	}
 })
@@ -5225,7 +5192,7 @@ Callback.addCallback("ItemUse", function(coords, item, block, isExter, player){
 			ParticlesAPI.spawnCircle(ParticlesAPI.part4, coords.x, coords.y+1, coords.z, i / 2, 11 * i, 2, Entity.getDimension(player));
 		let mob = BlockSource.getDefaultForActor(player).spawnEntity(coords.x, coords.y + 1, coords.z, "aw:tanatos");
 		Entity.setCarriedItem(mob, ItemID.aw_dead, 1, 0);
-   Entity.setCarriedItem(player, 0, 0, 0);
+  	Entity.setCarriedItem(player, 0, 0, 0);
 	}
 });
 
@@ -5326,15 +5293,15 @@ Callback.addCallback("ItemUse", function(coords, item, block, isExter, player){
     if(item.id == ItemID.piece4 && item.extra){
         if(ScrutinyAPI.giveScrutiny(player, ""+item.extra.getString("window", "aw"), ""+item.extra.getString("tab", "magic"), ""+item.extra.getString("name", "name"), true)){
             Entity.setCarriedItem(player, 0, 0, 0, null);
-            PlayerAC.message(player, TranslationLoad.get("aw.message.scrutiny", [["name", item.extra.getString("name2", "name")]]));
+            translateMessage(player, "aw.message.scrutiny", [["name", item.extra.getString("name2", "name")]]);
         }else{
-        	PlayerAC.message(player, TranslationLoad.get("aw.message.scrutiny_give_noy", [["name", item.extra.getString("name2", "name")]]));
+        	translateMessage(player, "aw.message.scrutiny_give_noy", [["name", item.extra.getString("name2", "name")]]);
         }
     }else if(item.id == ItemID.piece4){
         for(let i in arrScrut){
             ScrutinyAPI.giveScrutiny(player, arrScrut[i].win, arrScrut[i].tab, arrScrut[i].name, false);
         }
-        PlayerAC.message(player, Translation.translate("aw.message.scrutiny_all"));
+        translateMessage(player, "aw.message.scrutiny_all");
     }
 });
 Item.addCreativeGroup("scrutiny", Translation.translate("aw.creative_group.scrutiny"), [
@@ -9032,8 +8999,8 @@ TileEntity.registerPrototype(BlockID.rityalPedestal2, {
 
 IDRegistry.genBlockID("MagicConnector");
 Block.createBlock("MagicConnector", [ {name: "aw.block.magic_connector", texture: [["MagicReenactor", 0], ["MagicReenactor", 1],["MagicReenactor", 0]], inCreative: true} ], {
-base: 5,
-sound: "wood"
+	base: 5,
+	sound: "wood"
 });
 
 ToolAPI.registerBlockMaterial(BlockID.MagicConnector, "wood", 0);
@@ -9147,7 +9114,7 @@ TileEntity.registerPrototype(BlockID.MagicConnector, {
                    this.data.item.extra = Wands.getExtraByArr(arr);
                    this.data.item.extra.putInt("event", event);
                   }else{
-                  	PlayerAC.message(player, Translation.translate("aw.message.scroll_max"));
+                  	translateMessage(player, "aw.message.scroll_max");
                   }
                    
                 }
@@ -9484,6 +9451,7 @@ TileEntity.registerPrototype(BlockID.magicController, {
     },
     click: function(id, data, count, coords, player){
         if(ScrutinyAPI.isScrutiny(player, "aw", "basics", "MagicController")){
+        	Game.prevent();
         let slot = this.container.getSlot("slot");
         if(Wands.stick[slot.id] && id == ItemID.bookk && this.data.storage >= 50){
             this.data.storage -= 50;
@@ -9539,7 +9507,7 @@ TileEntity.registerPrototype(BlockID.magicController, {
             slot.extra.putString("name", name);
         }
         }else{
-            PlayerAC.message(player, TranslationLoad.get("aw.message.need_study", [["name", "MagicController"]]));
+            translateMessage(player, "aw.message.need_study", [["name", "MagicController"]]);
         }
     },
     getScreenName: function(player, coords){
