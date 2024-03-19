@@ -1,13 +1,3 @@
-function angleFor2dVector(x1, y1, x2, y2){
-	let v = Math.acos((x1*x2+y1*y2) / (Math.sqrt(x1 * x1 + y1 * y1)*Math.sqrt(x2 * x2 + y2 * y2)))
-	return isNaN(v) ? 0 : v;
-}
-
-function angleFor3dVector(x1, y1, z1, x2, y2, z2){
-	let v = Math.acos((x1*x2+y1*y2+z1*z2) / (Math.sqrt(x1 * x1 + y1 * y1 + z1 * z1)*Math.sqrt(x2 * x2 + y2 * y2 + z2 * z2)));
-	return isNaN(v) ? 0 : v;
-}
-
 //r - радиус
 //i - индекс
 //n - количество точек
@@ -20,18 +10,21 @@ function getPosPolygon(r, i, n){
 	}
 }
 
-const step = 2;
-const polygon_count = 14;
+let step = 2;
+let polygon_count = 14;
+let line_radius = .05;
 
-const points_polygon = (function(){
+function rebuildCacheSingularityLine(){
 	let points = [];
 		
 	for(let p = 0;p <= polygon_count;p++)
-		points.push(getPosPolygon(.05, p, polygon_count));
+		points.push(getPosPolygon(line_radius, p, polygon_count));
 		
 	return points;
-})();
-const index_pre = polygon_count-1;
+}
+
+let points_polygon = rebuildCacheSingularityLine();
+let index_pre = polygon_count-1;
 
 let FUNCS_MESH = [
 	function(mesh, pos, pre_pos, vz, post){
@@ -92,14 +85,7 @@ function buildLineMesh(x1, y1, z1, x2, y2, z2){
 		vz = post;
 	}
 	
-	const angleXZ = angleFor2dVector(0, radius, dx, dz);
-	
-	if(dx == 0 && dz == 0)
-		var angleY = Math.PI/2;
-	else
-		var angleY = angleFor3dVector(dx, 0, dz, dx, dy, dz);
-	
-	mesh.rotate(0 < y2-y1 ? -angleY : angleY, 0 < x2-x1 ? -angleXZ : angleXZ, 0);
+	rotateMesh(mesh, x1, x2, y1, y2, dx, dy, dz, radius);
 	mesh.translate(x1, y1, z1);
 	
 	return mesh;
@@ -114,7 +100,7 @@ let SingularityLines = {
 	
 	add(dim, x1, y1, z1, x2, y2, z2){
 		let key = this.buildKey(x1-.5, y1-.5, z1-.5, x2-.5, y2-.5, z2-.5);
-		let obj = {visibility: false, mesh: buildLineMesh(x1, y1, z1, x2, y2, z2), key: key, dim: dim}
+		let obj = {visibility: false, mesh: buildLineMesh(x1, y1, z1, x2, y2, z2), key: key, dim: dim, x1: x1, y1: y1, z1: z1, x2: x2, y2: y2, z2: z2}
 		this.lines[key] = obj;
 		return obj;
 	},
@@ -130,6 +116,17 @@ let SingularityLines = {
 	setVisibility(key, value){
 		if(this.lines[key])
 			this.lines[key].visibility = value;
+	},
+	
+	rebuildCache(){
+		for(let key in this.lines){
+			let line = this.lines[key];
+			with(line){
+				line.mesh = buildLineMesh(x1, y1, z1, x2, y2, z2);
+			}
+		}
+		
+		this.update();
 	},
 	
 	animation: new Animation.Base(0, 0, 0),
@@ -163,13 +160,15 @@ let SingularityLines = {
 			visibility(data){
 				let lines = this.lines = this.lines || {};
 				for(let i in data.lines){
-					let pos = data.lines[i];
-					lines[SingularityLines.buildKey(this.x, this.y, this.z, pos.x, pos.y, pos.z)].visibility = data.status;
+					let line = data.lines[i];
+					lines[line.key].visibility = data.status;
 				}
 				SingularityLines.update();
 			},
 			remove(data){
 				SingularityLines.remove(data.key);
+				let lines = this.lines = this.lines || {};
+				delete lines[data.key];
 			}
 		}
 		
@@ -197,7 +196,35 @@ let SingularityLines = {
 	}
 };
 
-const RADIUS_VISIBILITY = 35;
+void function(){
+	const CONF = "singularity_";
+
+	function initForConfig(config){
+		step = config.get(CONF+"step");
+		polygon_count = config.get(CONF+"polygon_count");
+		line_radius = config.get(CONF+"line_radius");
+		
+		points_polygon = rebuildCacheSingularityLine();
+		index_pre = polygon_count-1;
+		
+		SingularityLines.rebuildCache();
+	}
+
+	GraphicsSetting.register("Singularity lines", {
+		init(config, builder){
+			config.put(CONF+"step", step);
+			config.put(CONF+"polygon_count", polygon_count);
+			config.put(CONF+"line_radius", line_radius);
+			
+			builder.addSlider("Step", CONF+"step", 2, 14, 1);
+			builder.addSlider("Polygon count", CONF+"polygon_count", 4, 60, 1);
+			builder.addSlider("Line radius", CONF+"line_radius", .01, 1.5, .01);
+
+			initForConfig(config);
+		},
+		change: initForConfig
+	});
+}();
 
 Network.addClientPacket("aw.singularity_lines_update", function(lines){
 	for(let key in lines)
@@ -222,7 +249,9 @@ let NetworkSingularity = {
 	
 	send(){
 		let list = NetworkSingularity.lines;
+		NetworkSingularity.lines = {};
 		let players = Network.getConnectedPlayers();
+		
 		for(let key in list){
 			let lines = list[key];
 			let dimension = Number(key);
@@ -248,7 +277,6 @@ let NetworkSingularity = {
 				client && client.send("aw.singularity_lines_update", send);
 			}
 		}
-		this.lines = {};
 	}
 };
 
@@ -259,13 +287,66 @@ Callback.addCallback("LevelLeft", function(){
 });
 
 const base_transfer = function(output, tile){
-//	let angle = Entity.get
-	//if(World.getThreadTime() % 20 == 0)
-		//ParticlesAPI.spawnLine(ParticlesAPI.part2, tile.x, tile.y, tile.z, output.x, output.y, output.z, 15, tile.dimension);
+	if(World.getThreadTime() % 20 == 0)
+		ParticlesAPI.spawnLine(ParticlesAPI.part2, tile.x, tile.y, tile.z, output.x, output.y, output.z, 15, tile.dimension);
 }
 let SingularityAPI = {
 	input: {},
 	output: {},
+	
+	registerTile(id, tile){
+		let init = tile.init || function(){};
+		let tick = tile.tick || function(){};
+		let click = tile.click || function(){};
+		
+		tile.defaultValues = tile.defaultValues || {};
+		tile.defaultValues.aspect = tile.defaultValues.aspect || 0;
+		tile.defaultValues.aspectMax = tile.defaultValues.aspectMax || 50;
+		
+		function extended(obj, add){
+			for(let key in add){
+				let value = add[key];
+				let value_org = obj[key];
+			
+				if(!value_org){
+					obj[key] = value
+					continue;
+				}
+			
+				if(typeof value_org == "function")
+					obj[key] = function(){
+						value.apply(this, arguments);
+						value_org.apply(this, arguments);
+					}
+				else if(!Array.isArray(value_org))
+					extended(value_org, value);
+			}
+		}
+		
+		let client = tile.client || {};
+		extended(client, new SingularityLines.Client());
+		tile.client = client;
+		
+		tile.init = function(){
+			SingularityAPI.init(this);
+			init.apply(this, arguments);
+		}
+		
+		let transfee_max = tile.transfee_max || 2;
+		tile.tick = function(){
+			SingularityAPI.transfers(this, transfee_max, base_transfer);
+			tick.apply(this, arguments);
+		}
+		
+		tile.click = function(id, count, data, coords, player){
+			SingularityAPI.click(this, coords, player);
+			click.apply(this, arguments);
+		}
+		
+		tile.isOutput && this.setBlockOutputName(id, tile.output_name || "base", true);
+		tile.isInput && this.setBlockInputName(id, tile.input_name || "base", true);
+		TileEntity.registerPrototype(id, tile);
+	},
 	
 	setBlockInputName: function(id, name, bool){
 		this.input[name] = this.input[name] || {};

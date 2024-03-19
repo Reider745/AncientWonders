@@ -37,6 +37,7 @@ let ScrutinyWindow = {
 	size_y: sh - (this.top + this.bottom),
 	height: 540
 };
+
 let ScrutinyAPI_V2 = {
 	windows: {},
 	scrutiny: {},

@@ -8,6 +8,7 @@ let ThreadHelp = {
 		this.startGame = true;
 		
 		for(let name in this.threads){
+			let local_name = name;
 			let arr = this.threads[name];
 			
 			let func = arr[0];
@@ -15,8 +16,12 @@ let ThreadHelp = {
 	
 			Threading.initThread(name, function(){
 				while(ThreadHelp.startGame){
-					func();
-					Thread.sleep(period);
+					try{
+						func();
+						Thread.sleep(period);
+					}catch(e){
+						Debug.m(local_name+" "+e)
+					}
 				}
 			});
 		}

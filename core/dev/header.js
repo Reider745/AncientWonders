@@ -6,6 +6,9 @@ IMPORT("RenderUtil");
 IMPORT("ParticlesCore");
 IMPORT("BookHelper");
 
+const Random = java.util.Random;
+const RADIUS_VISIBILITY = 35;
+
 //Данный метод в хорике всегда возвращает false, на сервере true
 /*
 Вырезанный контент на сервере
@@ -18,69 +21,11 @@ Game.isDedicatedServer = Game.isDedicatedServer || function(){
 	return false;
 };
 
-const Bitmap = android.graphics.Bitmap;
-const Color = android.graphics.Color;
-
-function randInt(min, max){
-	return Math.floor(Math.random()*(max-min))+min;
-}
-
-function argbToHex(alpha, red, green, blue) {
-  let alphaHex = alpha.toString(16).toUpperCase();
-  let redHex = red.toString(16).toUpperCase();
-  let greenHex = green.toString(16).toUpperCase();
-  let blueHex = blue.toString(16).toUpperCase();
-
-  alphaHex = alphaHex.length < 2 ? "0" + alphaHex : alphaHex;
-  redHex = redHex.length < 2 ? "0" + redHex : redHex;
-  greenHex = greenHex.length < 2 ? "0" + greenHex : greenHex;
-  blueHex = blueHex.length < 2 ? "0" + blueHex : blueHex;
-
-  return "#" + alphaHex + redHex + greenHex + blueHex;
-}
-
-function parseColor(a, r, g, b){
-	return Color.parseColor(argbToHex(Math.floor(a*255), Math.floor(r*255), Math.floor(g*255), Math.floor(b*255)))
-}
-
-const setTimeout = function(func, ticks, obj){
-	obj = obj || {};
-	var upd = {
-		ticks: 0,
-		update(){
-			this.ticks++
-			if(this.ticks >= ticks){
-				 func(obj);
-				 this.remove = true
-			}
-		}
-	};
-	Updatable.addUpdatable(upd);
-}
-const setTimeoutLocal = function(func, ticks, obj){
-	obj = obj || {};
-	var upd = {
-		ticks: 0,
-		update(){
-			this.ticks++
-			if(this.ticks >= ticks){
-				 func(obj);
-				 this.remove = true
-			}
-		}
-	};
-	Updatable.addLocalUpdatable(upd);
-}
-
+//надо переписаить, но не хочу(
 function getProtPedestal(size){
 	return {
 		defaultValues: {
-        item: {
-            id: 0,
-            data: 0,
-            extra: null,
-            count: 0
-        }
+        item: null
     }, 
     init: function(){
         this.isItem();
@@ -187,38 +132,6 @@ function objectFix(prot1, prot2){
 	return result;
 }
 
-function connectBitmap(input, output, size){
-	let result = Bitmap.createBitmap(size, size * input.length, Bitmap.Config.ARGB_8888);
-	
-	for(let i in input){
-		let bitmap = FileTools.ReadImage(input[i]);
-		for(let x = 0;x < size;x++)
-			for(let y = 0;y < size;y++){
-				result.setPixel(x, y+i*size, bitmap.getPixel(x, y));
-			}
-	}
-	
-	FileTools.WriteImage(output, result);
-}
-const ATLAS = __dir__+"assets/particle-atlas/";
-function _connectBitmapToAssets(input, output, size){
-	let _input = [];
-	for(let i in input)
-		_input.push(ATLAS+input[i]);
-	connectBitmap(_input, ATLAS+output, size);
-}
-function connectBitmapToAssets(name, frames, size){
-	let input = [];
-	for(let i = 0;i < frames;i++)
-		input.push(name+"_"+i+".png");
-	_connectBitmapToAssets(input, name+".png", size);
-}
-
-/*
-connectBitmapToAssets("aw_bottle_potion", 2, 32);
-connectBitmapToAssets("singularity_particle", 3, 32);
-connectBitmapToAssets("magic_particle", 9, 32);
-*/
 let RenderAPI = RenderUtil;
 
 ItemModel.setCurrentCacheGroup("AncientWonders", "release 1.3.2");
@@ -348,8 +261,8 @@ function playSound(name, player, radius){
 
 
 
-Callback.addCallback("LevelDisplayed", function() {
-   setTimeoutLocal(function (){
-Game.message(Translation.translate("aw.message.entrance"));
-}, 40);
+Callback.addCallback("LevelDisplayed", function(){
+   setTimeoutLocal(function(){
+   	Game.message(Translation.translate("aw.message.entrance"));
+	}, 40);
 });

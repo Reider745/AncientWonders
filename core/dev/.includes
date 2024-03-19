@@ -1,5 +1,6 @@
 TranslationLoad.js
 core/ScrutinyAPI_v2.js
+core/utils.js
 header.js 
 AI.js
 
@@ -14,6 +15,7 @@ models/ResearchTable.js
 
 items/enchant.js
 
+core/GraphicsSetting.js
 core/ThreadHelp.js
 core/renderAPI.js
 core/ItemName.js
@@ -30,6 +32,7 @@ core/RitualsAPI.js
 core/SingularityAPI.js
 core/ScrutinyGeneration.js
 core/ProjectTile.js
+core/Lightbolt.js
 
 items/item.js
 items/wand.js
