@@ -48,7 +48,8 @@ void function(){
 	});
 }();
 
-RenderAPI.setTransmitter(BlockID.transmitter);
+let energy_transmission = loadForBlockbenchProject(PATH_BBMODEL+"energy_transmission.bbmodel")
+	.setBlockModel(BlockID.transmitter);
 SingularityAPI.registerTile(BlockID.transmitter, {
 	isOutput: true,
 	isInput: true,

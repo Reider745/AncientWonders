@@ -33,14 +33,160 @@ connectBitmapToAssets("singularity_particle", 3, 32);
 connectBitmapToAssets("magic_particle", 9, 32);
 */
 
-function splitTextureForBlockbench(bbmodel, path_texture){
+/*
+формат файла bbmodel
+
+{
+	meta: {
+		format_version: 4.9,
+		model_format: inner-core-model
+		box_uv: false
+	} 
+	name: "...",
+	model_identifier: "",
+	...
+	elements: [
+		{
+			"name":"cube",
+			"box_uv":false,
+			"rescale":false,
+			"locked":false,
+			"render_order":"default",
+			"allow_mirror_modeling":true,
+			"from":[4,0,11],
+			"to":[5,8,12],
+			"autouv":0,
+			"color":8,
+			"origin":[0,0,0],
+			"faces":{
+				"north":{
+					"uv":[16,18,17,26],"texture":1
+				},
+				"east":{
+					"uv":[16,18,17,26],"texture":1
+				},
+				"south":{
+					"uv":[16,18,17,26],"texture":1
+				},
+				"west":{
+					"uv":[16,18,17,26],"texture":1
+				},
+				"up":{
+					"uv":[16,18,17,19],"texture":1
+				},
+				"down":{
+					"uv":[16,18,17,19],"texture":1
+				}
+			},
+			"type":"cube",
+			"uuid":"..."
+		},
+		...
+	]
+}
+*/
+
+function splitForFace(index, face, x, y, uv, bitmap, path, inverse){
+	let result = Bitmap.createBitmap(16, 16, Bitmap.Config.ARGB_8888);
+	let res_y = y;
 	
+	for(let u = Math.min(uv[0], uv[2]);u < Math.max(uv[0], uv[2]);u++){
+		for(let v = Math.min(uv[1], uv[3]);v < Math.max(uv[1], uv[3]);v++){
+			let pixel = bitmap.getPixel(u, v);
+			if(Color.alpha(pixel) <= 0)
+				pixel = Color.GREEN;
+			if(inverse)
+				result.setPixel(x, 15-y, pixel);
+			else
+				result.setPixel(x, y, pixel);
+			y++;
+		}
+		y = res_y;
+		x++;
+	}
+	FileTools.WriteImage(path + face + "_" + index + ".png", result);
+}
+
+function StringToBitmap(encodedString){
+	try{
+		encodeByte = android.util.Base64.decode(encodedString, 0);
+		bitmap = android.graphics.BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length);
+		return bitmap;
+	}catch(e){
+		return null;
+	}
+}
+
+function getFolderPath(filePath){
+	const parts = filePath.replace(/\\/g, '/').split('/');
+	parts.pop();
+	return parts.join('/');
+}
+
+//за этот код пиздить меня не надо, я трогать его снова не хочу!
+function loadForBlockbenchProject(bbmodel){
+	const file = FileTools.ReadJSON(bbmodel);
+	const name_model = file.name;
+	const textures = {};
+	
+	for(let i in file.textures){
+		let description = file.textures[i];
+		
+		textures[description.id] = StringToBitmap(description.source.split(",")[1]);
+	}
+	
+	const current_path = getFolderPath(bbmodel);
+	const texture_folder = current_path+"/"+name_model;
+	
+	if(!FileTools.isExists(texture_folder))
+		FileTools.mkdir(texture_folder);
+	
+	let model = new RenderUtil.Model();
+	
+	for(let i in file.elements){
+		let element = file.elements[i];
+		let pos = element["from"];
+		let to = element["to"];
+		
+		let xs = Math.abs(to[0] - pos[0]);
+		let zs = Math.abs(to[2] - pos[2]);
+		
+		for(let name in element.faces){
+			let face = element.faces[name];
+			let uv = face.uv;
+			let v = Math.abs(uv[2] - uv[0]);
+			
+			if(name == "up" || name == "down")
+				var x = pos[0], y = pos[2], inverse = false;
+			else if(name == "west" || name == "east")
+				var x = pos[2], y = pos[1], inverse = true;
+			else
+				var x = pos[0], y = pos[1], inverse = true;
+				
+			if(!(name == "up" || name == "down") && (xs > 1 || zs > 1))
+				if(v == xs)
+					x = pos[0], y = pos[1], inverse = true;
+				else
+					x = pos[2], y = pos[1], inverse = true;
+			splitForFace(i, name_model+"_"+name, x, y, uv, textures[face.texture], texture_folder+"/", inverse);
+		}
+		i = Number(i);
+		model.add(pos[0] / 16, pos[1] / 16, pos[2] / 16, to[0] / 16, to[1] / 16, to[2] / 16, [
+			[name_model+"_"+"down", i],
+			[name_model+"_"+"up", i],
+			
+			[name_model+"_"+"south", i],
+			[name_model+"_"+"north", i],
+			
+			[name_model+"_"+"west", i],
+			[name_model+"_"+"east", i]
+		])
+	}
+	
+	return model;
 }
 
 //другое вспомогательное
-
-const Bitmap = android.graphics.Bitmap;
-const Color = android.graphics.Color;
 
 function randInt(min, max){
 	return Math.floor(Math.random()*(max-min))+min;

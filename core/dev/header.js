@@ -7,7 +7,10 @@ IMPORT("ParticlesCore");
 IMPORT("BookHelper");
 
 const Random = java.util.Random;
+const Bitmap = android.graphics.Bitmap;
+const Color = android.graphics.Color;
 const RADIUS_VISIBILITY = 35;
+const PATH_BBMODEL = __dir__+"assets/terrain-atlas/bbmodel/"
 
 //Данный метод в хорике всегда возвращает false, на сервере true
 /*

@@ -1,7 +1,7 @@
 TranslationLoad.js
 core/ScrutinyAPI_v2.js
-core/utils.js
 header.js 
+core/utils.js
 AI.js
 
 models/yes.js

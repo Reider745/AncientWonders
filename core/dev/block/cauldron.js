@@ -26,7 +26,7 @@ function getParticleType(descriptor){
 }
 
 Network.addClientPacket("aw.spawnCauldron", function(data){
-	if(Entity.getDimension(Player.get()) != data.dimension)
+	if(Player.getDimension() != data.dimension)
 		return;
 	Particles.addParticle(getParticleType(data), data.x+Math.random(), data.y+1, data.z+Math.random(), 0, Math.random()/10, 0);
 });
