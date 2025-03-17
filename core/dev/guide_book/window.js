@@ -44,7 +44,7 @@ function getArmorBook(slot, title, text, items){
 	for(let i in items){
 		let id = items[i];
 		arr.push({type: "slot", slots: [{size: slot,item:{id:id}}]});
-		arr.push({text: TranslationLoad.get("aw.guide.armor.value", [["value", ItemModule.getArmorValue(id)]]), size: text});
+		arr.push({text: TranslationLoad.get("aw.guide.armor.value", [["value", Item.getArmorValue(id)]]), size: text});
 		arr.push({text: TranslationLoad.get("aw.guide.armor.damage", [["value", Item.getMaxDamage(id)]]), size: text});
 		let obj = MagicCore.armors[id]
 		if(obj)

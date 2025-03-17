@@ -71,7 +71,7 @@ var MagicCore = {
     		parameter: parameter,
     		value: value
     	}
-    	ItemName.setName(id, "\n "+ TranslationLoad.get("aw.message.required_level", [["name", parameter],["level", value]]), true);
+    	addInformation(id, "aw.message.required_level", [["name", parameter],["level", value]]);
     	Armor.registerOnTakeOnListener(id, function(item, slot, player){
     		let actor = new PlayerActor(player);
     		let coords = Entity.getPosition(player);

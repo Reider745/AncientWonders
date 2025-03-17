@@ -57,8 +57,8 @@ Item.createItem("aw_magic_staff", "aw.item.magic_staff", {name: "magic_staff", m
 
 IDRegistry.genItemID("aw_dead"); 
 Item.createItem("aw_dead", "aw.item.death", {name: "aw_dead", meta: 0}, {stack: 1});
-ItemModule.setFireResistant(ItemID.aw_dead, true);
-ItemModule.setExplodable(ItemID.aw_dead, true);
+Item.setFireResistant(ItemID.aw_dead, true);
+Item.setExplodable(ItemID.aw_dead, true);
 
 ToolAPI.addToolMaterial("godDead", {
     durability: 3000,

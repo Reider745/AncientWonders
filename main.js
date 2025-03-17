@@ -2,7 +2,7 @@
 BUILD INFO:
   dir: core/dev
   target: main.js
-  files: 87
+  files: 90
 */
 
 
@@ -218,6 +218,7 @@ let ScrutinyWindow = {
 	size_y: sh - (this.top + this.bottom),
 	height: 540
 };
+
 let ScrutinyAPI_V2 = {
 	windows: {},
 	scrutiny: {},
@@ -909,81 +910,17 @@ IMPORT("RenderUtil");
 IMPORT("ParticlesCore");
 IMPORT("BookHelper");
 
-//Данный метод в хорике всегда возвращает false, на сервере true
-/*
-Вырезанный контент на сервере
-
-команды
-мобы, боссы
-не сгораемый и не взрываемая коса
-*/
-Game.isDedicatedServer = Game.isDedicatedServer || function(){
-	return false;
-};
-
+const Random = java.util.Random;
 const Bitmap = android.graphics.Bitmap;
 const Color = android.graphics.Color;
+const RADIUS_VISIBILITY = 35;
+const PATH_BBMODEL = __dir__+"assets/terrain-atlas/bbmodel/"
 
-function randInt(min, max){
-	return Math.floor(Math.random()*(max-min))+min;
-}
-
-function argbToHex(alpha, red, green, blue) {
-  let alphaHex = alpha.toString(16).toUpperCase();
-  let redHex = red.toString(16).toUpperCase();
-  let greenHex = green.toString(16).toUpperCase();
-  let blueHex = blue.toString(16).toUpperCase();
-
-  alphaHex = alphaHex.length < 2 ? "0" + alphaHex : alphaHex;
-  redHex = redHex.length < 2 ? "0" + redHex : redHex;
-  greenHex = greenHex.length < 2 ? "0" + greenHex : greenHex;
-  blueHex = blueHex.length < 2 ? "0" + blueHex : blueHex;
-
-  return "#" + alphaHex + redHex + greenHex + blueHex;
-}
-
-function parseColor(a, r, g, b){
-	return Color.parseColor(argbToHex(Math.floor(a*255), Math.floor(r*255), Math.floor(g*255), Math.floor(b*255)))
-}
-
-const setTimeout = function(func, ticks, obj){
-	obj = obj || {};
-	var upd = {
-		ticks: 0,
-		update(){
-			this.ticks++
-			if(this.ticks >= ticks){
-				 func(obj);
-				 this.remove = true
-			}
-		}
-	};
-	Updatable.addUpdatable(upd);
-}
-const setTimeoutLocal = function(func, ticks, obj){
-	obj = obj || {};
-	var upd = {
-		ticks: 0,
-		update(){
-			this.ticks++
-			if(this.ticks >= ticks){
-				 func(obj);
-				 this.remove = true
-			}
-		}
-	};
-	Updatable.addLocalUpdatable(upd);
-}
-
+//надо переписаить, но не хочу(
 function getProtPedestal(size){
 	return {
 		defaultValues: {
-        item: {
-            id: 0,
-            data: 0,
-            extra: null,
-            count: 0
-        }
+        item: null
     }, 
     init: function(){
         this.isItem();
@@ -1090,38 +1027,6 @@ function objectFix(prot1, prot2){
 	return result;
 }
 
-function connectBitmap(input, output, size){
-	let result = Bitmap.createBitmap(size, size * input.length, Bitmap.Config.ARGB_8888);
-	
-	for(let i in input){
-		let bitmap = FileTools.ReadImage(input[i]);
-		for(let x = 0;x < size;x++)
-			for(let y = 0;y < size;y++){
-				result.setPixel(x, y+i*size, bitmap.getPixel(x, y));
-			}
-	}
-	
-	FileTools.WriteImage(output, result);
-}
-const ATLAS = __dir__+"assets/particle-atlas/";
-function _connectBitmapToAssets(input, output, size){
-	let _input = [];
-	for(let i in input)
-		_input.push(ATLAS+input[i]);
-	connectBitmap(_input, ATLAS+output, size);
-}
-function connectBitmapToAssets(name, frames, size){
-	let input = [];
-	for(let i = 0;i < frames;i++)
-		input.push(name+"_"+i+".png");
-	_connectBitmapToAssets(input, name+".png", size);
-}
-
-/*
-connectBitmapToAssets("aw_bottle_potion", 2, 32);
-connectBitmapToAssets("singularity_particle", 3, 32);
-connectBitmapToAssets("magic_particle", 9, 32);
-*/
 let RenderAPI = RenderUtil;
 
 ItemModel.setCurrentCacheGroup("AncientWonders", "release 1.3.2");
@@ -1175,33 +1080,21 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 
-
-
-function playAnimation(player, anim, time){
-	Commands.exec('/playanimation "'+Entity.getNameTag(player)+'" '+anim+' null '+time)
-}
-
-var PlayerModule = WRAP_NATIVE("PlayerModule");
-if(!Game.isDedicatedServer())
-	var ItemModule = WRAP_NATIVE("ItemModule");
-else
-	var ItemModule = {
-		setFireResistant(id, value){},
-		setExplodable(id, value){},
-		getArmorValue(id){
-			return 0;
-		}
-	};
-
-Network.addClientPacket("Player.animation.aw", function(name){
-    PlayerModule.startSpinAttack();
+Network.addClientPacket("player.animation.aw", function(data){
+	Entity.playAnimation(data.player, data.name, data.time);
 });
 
-function startSpinAttack(player){
-    let client = Network.getClientForPlayer(player);
-    if(client != null){
-        client.send("Player.animation.aw", {});
-    }
+function playAnimation(region, radius, player, anim, time){
+	let pos = Entity.getPosition(player);
+	let players = getVisibalePlayers(region, pos.x, pos.y, pos.z, radius);
+	for(let i in players){
+		let client = Network.getClientForPlayer(players[i]);
+		client && client.send("player.animation.aw", {
+			player: player,
+			name: anim,
+			time: time
+		});
+	}
 }
 
 ScrutinyAPI.save = __config__.getBool("debug.saveScrutiny");
@@ -1251,11 +1144,296 @@ function playSound(name, player, radius){
 
 
 
-Callback.addCallback("LevelDisplayed", function() {
-   setTimeoutLocal(function (){
-Game.message(Translation.translate("aw.message.entrance"));
-}, 40);
+Callback.addCallback("LevelDisplayed", function(){
+   setTimeoutLocal(function(){
+   	Game.message(Translation.translate("aw.message.entrance"));
+	}, 40);
 });
+
+
+
+
+// file: core/utils.js
+
+//вспомагательные методы во время разработки
+
+function connectBitmap(input, output, size){
+	let result = Bitmap.createBitmap(size, size * input.length, Bitmap.Config.ARGB_8888);
+	
+	for(let i in input){
+		let bitmap = FileTools.ReadImage(input[i]);
+		for(let x = 0;x < size;x++)
+			for(let y = 0;y < size;y++){
+				result.setPixel(x, y+i*size, bitmap.getPixel(x, y));
+			}
+	}
+	
+	FileTools.WriteImage(output, result);
+}
+const ATLAS = __dir__+"assets/particle-atlas/";
+function _connectBitmapToAssets(input, output, size){
+	let _input = [];
+	for(let i in input)
+		_input.push(ATLAS+input[i]);
+	connectBitmap(_input, ATLAS+output, size);
+}
+function connectBitmapToAssets(name, frames, size){
+	let input = [];
+	for(let i = 0;i < frames;i++)
+		input.push(name+"_"+i+".png");
+	_connectBitmapToAssets(input, name+".png", size);
+}
+
+/*
+connectBitmapToAssets("aw_bottle_potion", 2, 32);
+connectBitmapToAssets("singularity_particle", 3, 32);
+connectBitmapToAssets("magic_particle", 9, 32);
+*/
+
+/*
+формат файла bbmodel
+
+{
+	meta: {
+		format_version: 4.9,
+		model_format: inner-core-model
+		box_uv: false
+	} 
+	name: "...",
+	model_identifier: "",
+	...
+	elements: [
+		{
+			"name":"cube",
+			"box_uv":false,
+			"rescale":false,
+			"locked":false,
+			"render_order":"default",
+			"allow_mirror_modeling":true,
+			"from":[4,0,11],
+			"to":[5,8,12],
+			"autouv":0,
+			"color":8,
+			"origin":[0,0,0],
+			"faces":{
+				"north":{
+					"uv":[16,18,17,26],"texture":1
+				},
+				"east":{
+					"uv":[16,18,17,26],"texture":1
+				},
+				"south":{
+					"uv":[16,18,17,26],"texture":1
+				},
+				"west":{
+					"uv":[16,18,17,26],"texture":1
+				},
+				"up":{
+					"uv":[16,18,17,19],"texture":1
+				},
+				"down":{
+					"uv":[16,18,17,19],"texture":1
+				}
+			},
+			"type":"cube",
+			"uuid":"..."
+		},
+		...
+	]
+}
+*/
+
+function splitForFace(index, face, x, y, uv, bitmap, path, inverse){
+	let result = Bitmap.createBitmap(16, 16, Bitmap.Config.ARGB_8888);
+	let res_y = y;
+	
+	for(let u = Math.min(uv[0], uv[2]);u < Math.max(uv[0], uv[2]);u++){
+		for(let v = Math.min(uv[1], uv[3]);v < Math.max(uv[1], uv[3]);v++){
+			let pixel = bitmap.getPixel(u, v);
+			if(Color.alpha(pixel) <= 0)
+				pixel = Color.GREEN;
+			if(inverse)
+				result.setPixel(x, 15-y, pixel);
+			else
+				result.setPixel(x, y, pixel);
+			y++;
+		}
+		y = res_y;
+		x++;
+	}
+	FileTools.WriteImage(path + face + "_" + index + ".png", result);
+}
+
+function StringToBitmap(encodedString){
+	try{
+		encodeByte = android.util.Base64.decode(encodedString, 0);
+		bitmap = android.graphics.BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length);
+		return bitmap;
+	}catch(e){
+		return null;
+	}
+}
+
+function getFolderPath(filePath){
+	const parts = filePath.replace(/\\/g, '/').split('/');
+	parts.pop();
+	return parts.join('/');
+}
+
+//за этот код пиздить меня не надо, я трогать его снова не хочу!
+function loadForBlockbenchProject(bbmodel){
+	const file = FileTools.ReadJSON(bbmodel);
+	const name_model = file.name;
+	const textures = {};
+	
+	for(let i in file.textures){
+		let description = file.textures[i];
+		
+		textures[description.id] = StringToBitmap(description.source.split(",")[1]);
+	}
+	
+	const current_path = getFolderPath(bbmodel);
+	const texture_folder = current_path+"/"+name_model;
+	
+	if(!FileTools.isExists(texture_folder))
+		FileTools.mkdir(texture_folder);
+	
+	let model = new RenderUtil.Model();
+	
+	for(let i in file.elements){
+		let element = file.elements[i];
+		let pos = element["from"];
+		let to = element["to"];
+		
+		let xs = Math.abs(to[0] - pos[0]);
+		let zs = Math.abs(to[2] - pos[2]);
+		
+		for(let name in element.faces){
+			let face = element.faces[name];
+			let uv = face.uv;
+			let v = Math.abs(uv[2] - uv[0]);
+			
+			if(name == "up" || name == "down")
+				var x = pos[0], y = pos[2], inverse = false;
+			else if(name == "west" || name == "east")
+				var x = pos[2], y = pos[1], inverse = true;
+			else
+				var x = pos[0], y = pos[1], inverse = true;
+				
+			if(!(name == "up" || name == "down") && (xs > 1 || zs > 1))
+				if(v == xs)
+					x = pos[0], y = pos[1], inverse = true;
+				else
+					x = pos[2], y = pos[1], inverse = true;
+			splitForFace(i, name_model+"_"+name, x, y, uv, textures[face.texture], texture_folder+"/", inverse);
+		}
+		i = Number(i);
+		model.add(pos[0] / 16, pos[1] / 16, pos[2] / 16, to[0] / 16, to[1] / 16, to[2] / 16, [
+			[name_model+"_"+"down", i],
+			[name_model+"_"+"up", i],
+			
+			[name_model+"_"+"south", i],
+			[name_model+"_"+"north", i],
+			
+			[name_model+"_"+"west", i],
+			[name_model+"_"+"east", i]
+		])
+	}
+	
+	return model;
+}
+
+//другое вспомогательное
+
+function randInt(min, max){
+	return Math.floor(Math.random()*(max-min))+min;
+}
+
+function argbToHex(alpha, red, green, blue) {
+  let alphaHex = alpha.toString(16).toUpperCase();
+  let redHex = red.toString(16).toUpperCase();
+  let greenHex = green.toString(16).toUpperCase();
+  let blueHex = blue.toString(16).toUpperCase();
+
+  alphaHex = alphaHex.length < 2 ? "0" + alphaHex : alphaHex;
+  redHex = redHex.length < 2 ? "0" + redHex : redHex;
+  greenHex = greenHex.length < 2 ? "0" + greenHex : greenHex;
+  blueHex = blueHex.length < 2 ? "0" + blueHex : blueHex;
+
+  return "#" + alphaHex + redHex + greenHex + blueHex;
+}
+
+function parseColor(a, r, g, b){
+	return Color.parseColor(argbToHex(Math.floor(a*255), Math.floor(r*255), Math.floor(g*255), Math.floor(b*255)))
+}
+
+const setTimeout = function(func, ticks, obj){
+	obj = obj || {};
+	var upd = {
+		ticks: 0,
+		update(){
+			this.ticks++
+			if(this.ticks >= ticks){
+				 func(obj);
+				 this.remove = true
+			}
+		}
+	};
+	Updatable.addUpdatable(upd);
+}
+const setTimeoutLocal = function(func, ticks, obj){
+	obj = obj || {};
+	var upd = {
+		ticks: 0,
+		update(){
+			this.ticks++
+			if(this.ticks >= ticks){
+				 func(obj);
+				 this.remove = true
+			}
+		}
+	};
+	Updatable.addLocalUpdatable(upd);
+}
+
+
+function centerBlockPos(pos){
+	return {
+		x: pos.x + .5,
+		y: pos.y + .5,
+		z: pos.z + .5,
+	};
+}
+
+function randPos(pos, max){
+	let half = max / 2;
+	return {
+		x: pos.x + Math.random() * max - half,
+		y: pos.y + Math.random() * max - half,
+		z: pos.z + Math.random() * max - half
+	};
+}
+
+function angleFor2dVector(x1, y1, x2, y2){
+	let v = Math.acos((x1*x2+y1*y2) / (Math.sqrt(x1 * x1 + y1 * y1)*Math.sqrt(x2 * x2 + y2 * y2)))
+	return isNaN(v) ? 0 : v;
+}
+
+function angleFor3dVector(x1, y1, z1, x2, y2, z2){
+	let v = Math.acos((x1*x2+y1*y2+z1*z2) / (Math.sqrt(x1 * x1 + y1 * y1 + z1 * z1)*Math.sqrt(x2 * x2 + y2 * y2 + z2 * z2)));
+	return isNaN(v) ? 0 : v;
+}
+
+function rotateMesh(mesh, x1, x2, y1, y2, dx, dy, dz, radius){
+	const angleXZ = angleFor2dVector(0, radius, dx, dz);
+	
+	if(dx == 0 && dz == 0)
+		var angleY = Math.PI/2;
+	else
+		var angleY = angleFor3dVector(dx, 0, dz, dx, dy, dz);
+	
+	mesh.rotate(0 < y2-y1 ? -angleY : angleY, 0 < x2-x1 ? -angleXZ : angleXZ, 0);
+}
 
 
 
@@ -2043,6 +2221,57 @@ addEnchant(magic_damage.id, 3);
 
 
 
+// file: core/GraphicsSetting.js
+
+let GraphicsSetting = {
+	settings: {},
+
+	register(name, obj){
+		obj.init = obj.init || function(){};
+		obj.change = obj.change || function(){};
+		
+		if(this.api){
+			with(this.api){
+				builder.addSectionDivider(name, 20);
+				obj.init(config, builder);
+			}
+		}
+		this.settings[name] = obj;
+	}
+};
+
+ModAPI.addAPICallback("RuntimeSetting", function(api){
+	with(api){
+		let setting = new Setting(__dir__);
+		let config = new ConfigStorage(__dir__+"runtime_config.json");
+		let builder = new BuilderConfig(config);
+		
+		GraphicsSetting.api = {
+			config: config,
+			builder: builder
+		};
+		
+		for(let name in GraphicsSetting.settings){
+			let setting = GraphicsSetting.settings[name];
+			
+			builder.addSectionDivider(name, 20);
+			
+			setting.init(config, builder);
+		}
+		
+		setting.setBuilderConfig(builder);
+		
+		setting.setChangeSetting(function(){
+			for(let name in GraphicsSetting.settings)
+				GraphicsSetting.settings[name]
+					.change(config);
+		});
+	}
+});
+
+
+
+
 // file: core/ThreadHelp.js
 
 const Thread = java.lang.Thread;
@@ -2055,6 +2284,7 @@ let ThreadHelp = {
 		this.startGame = true;
 		
 		for(let name in this.threads){
+			let local_name = name;
 			let arr = this.threads[name];
 			
 			let func = arr[0];
@@ -2062,8 +2292,12 @@ let ThreadHelp = {
 	
 			Threading.initThread(name, function(){
 				while(ThreadHelp.startGame){
-					func();
-					Thread.sleep(period);
+					try{
+						func();
+						Thread.sleep(period);
+					}catch(e){
+						Debug.m(local_name+" "+e)
+					}
 				}
 			});
 		}
@@ -2256,57 +2490,17 @@ __plantVertex: [
 
 // file: core/ItemName.js
 
-if(!Game.isDedicatedServer())
-	var CustomName = com.core.api.Item;
-else
-	var CustomName = {
-		overrideName(){}
+function addInformation(id, add, values){
+	let func = Item.nameOverrideFunctions[id] || function(item, transl, name) {
+		return transl;
 	};
-
-Network.addClientPacket("ItemName.setNameClient", function(data){
-	for(let key in data){
-		let obj = data[key];
-		if(!ItemName.names[obj.id])
-			ItemName.names[obj.id] = Translation.translate(Item.getName(obj.id, 0));
-		if(obj.add)
-			CustomName.overrideName(obj.id, String(ItemName.names[obj.id] + obj.name));
-		else
-			CustomName.overrideName(obj.id, String(obj.name));
-	}
-});
-
-let canLoadedCoreUtility = false;
-
-Callback.addCallback("ServerPlayerLoaded", function(player){
-	if(canLoadedCoreUtility) return;
-	let client = Network.getClientForPlayer(player);
-	if(client)
-		client.send("ItemName.setNameClient", ItemName.customs);
-});
-
-var ItemName = {
-	customs: {},
-	names: {},
-	setName(id, name, add){
-		this.customs[id] = {
-			id: id,
-			name: name,
-			add: !!add
-		};
-	}
-};
-
-ModAPI.addAPICallback("CoreUtility", function(api){
-	canLoadedCoreUtility = true;
 	
-	for(let key in ItemName.customs){
-		let obj = ItemName.customs[key];
-		if(obj.add)
-			api.ToolTip.addToolTip(obj.id, -1, String(obj.name));
-		else
-			CustomName.overrideName(obj.id, String(obj.name));
-	}
-});
+	Item.registerNameOverrideFunction(id, function(item, transl, name){
+		let fullName = func(item, transl, name);
+		fullName += "\n" + TranslationLoad.get(add, values);
+		return fullName;
+	});
+}
 
 
 
@@ -2386,7 +2580,7 @@ var MagicCore = {
     		parameter: parameter,
     		value: value
     	}
-    	ItemName.setName(id, "\n "+ TranslationLoad.get("aw.message.required_level", [["name", parameter],["level", value]]), true);
+    	addInformation(id, "aw.message.required_level", [["name", parameter],["level", value]]);
     	Armor.registerOnTakeOnListener(id, function(item, slot, player){
     		let actor = new PlayerActor(player);
     		let coords = Entity.getPosition(player);
@@ -3119,8 +3313,7 @@ BookAPI.drawFunc("noy", "message", function(classData, player, i, nameParameter)
 });
 
 Callback.addCallback("ItemUse", function(coords, item, block, is, player){
-	alert(Game.isActionPrevented())
-	if(item.id == ItemID.bookk && !Game.isActionPrevented() && RitualAPI.pedestals.indexOf(block.id) == -1){
+	if(item.id == ItemID.bookk && !Game.isActionPrevented() && RitualAPI.pedestals.indexOf(block.id) == -1 && block.id != BlockID.MagicConnector && block.id != BlockID.magicController){
 		if(ScrutinyAPI.isScrutiny(player, "aw", "basics", "book")){
 			if(Entity.getSneaking(player)){
 				let data = MagicCore.getValue(player);
@@ -4271,16 +4464,6 @@ var RitualAPI = {
 
 // file: core/SingularityAPI.js
 
-function angleFor2dVector(x1, y1, x2, y2){
-	let v = Math.acos((x1*x2+y1*y2) / (Math.sqrt(x1 * x1 + y1 * y1)*Math.sqrt(x2 * x2 + y2 * y2)))
-	return isNaN(v) ? 0 : v;
-}
-
-function angleFor3dVector(x1, y1, z1, x2, y2, z2){
-	let v = Math.acos((x1*x2+y1*y2+z1*z2) / (Math.sqrt(x1 * x1 + y1 * y1 + z1 * z1)*Math.sqrt(x2 * x2 + y2 * y2 + z2 * z2)));
-	return isNaN(v) ? 0 : v;
-}
-
 //r - радиус
 //i - индекс
 //n - количество точек
@@ -4293,18 +4476,21 @@ function getPosPolygon(r, i, n){
 	}
 }
 
-const step = 2;
-const polygon_count = 14;
+let step = 2;
+let polygon_count = 14;
+let line_radius = .05;
 
-const points_polygon = (function(){
+function rebuildCacheSingularityLine(){
 	let points = [];
 		
 	for(let p = 0;p <= polygon_count;p++)
-		points.push(getPosPolygon(.05, p, polygon_count));
+		points.push(getPosPolygon(line_radius, p, polygon_count));
 		
 	return points;
-})();
-const index_pre = polygon_count-1;
+}
+
+let points_polygon = rebuildCacheSingularityLine();
+let index_pre = polygon_count-1;
 
 let FUNCS_MESH = [
 	function(mesh, pos, pre_pos, vz, post){
@@ -4365,14 +4551,7 @@ function buildLineMesh(x1, y1, z1, x2, y2, z2){
 		vz = post;
 	}
 	
-	const angleXZ = angleFor2dVector(0, radius, dx, dz);
-	
-	if(dx == 0 && dz == 0)
-		var angleY = Math.PI/2;
-	else
-		var angleY = angleFor3dVector(dx, 0, dz, dx, dy, dz);
-	
-	mesh.rotate(0 < y2-y1 ? -angleY : angleY, 0 < x2-x1 ? -angleXZ : angleXZ, 0);
+	rotateMesh(mesh, x1, x2, y1, y2, dx, dy, dz, radius);
 	mesh.translate(x1, y1, z1);
 	
 	return mesh;
@@ -4387,7 +4566,7 @@ let SingularityLines = {
 	
 	add(dim, x1, y1, z1, x2, y2, z2){
 		let key = this.buildKey(x1-.5, y1-.5, z1-.5, x2-.5, y2-.5, z2-.5);
-		let obj = {visibility: false, mesh: buildLineMesh(x1, y1, z1, x2, y2, z2), key: key, dim: dim}
+		let obj = {visibility: false, mesh: buildLineMesh(x1, y1, z1, x2, y2, z2), key: key, dim: dim, x1: x1, y1: y1, z1: z1, x2: x2, y2: y2, z2: z2}
 		this.lines[key] = obj;
 		return obj;
 	},
@@ -4403,6 +4582,17 @@ let SingularityLines = {
 	setVisibility(key, value){
 		if(this.lines[key])
 			this.lines[key].visibility = value;
+	},
+	
+	rebuildCache(){
+		for(let key in this.lines){
+			let line = this.lines[key];
+			with(line){
+				line.mesh = buildLineMesh(x1, y1, z1, x2, y2, z2);
+			}
+		}
+		
+		this.update();
 	},
 	
 	animation: new Animation.Base(0, 0, 0),
@@ -4436,13 +4626,15 @@ let SingularityLines = {
 			visibility(data){
 				let lines = this.lines = this.lines || {};
 				for(let i in data.lines){
-					let pos = data.lines[i];
-					lines[SingularityLines.buildKey(this.x, this.y, this.z, pos.x, pos.y, pos.z)].visibility = data.status;
+					let line = data.lines[i];
+					lines[line.key].visibility = data.status;
 				}
 				SingularityLines.update();
 			},
 			remove(data){
 				SingularityLines.remove(data.key);
+				let lines = this.lines = this.lines || {};
+				delete lines[data.key];
 			}
 		}
 		
@@ -4470,7 +4662,35 @@ let SingularityLines = {
 	}
 };
 
-const RADIUS_VISIBILITY = 35;
+void function(){
+	const CONF = "singularity_";
+
+	function initForConfig(config){
+		step = config.get(CONF+"step");
+		polygon_count = config.get(CONF+"polygon_count");
+		line_radius = config.get(CONF+"line_radius");
+		
+		points_polygon = rebuildCacheSingularityLine();
+		index_pre = polygon_count-1;
+		
+		SingularityLines.rebuildCache();
+	}
+
+	GraphicsSetting.register("Singularity lines", {
+		init(config, builder){
+			config.put(CONF+"step", step);
+			config.put(CONF+"polygon_count", polygon_count);
+			config.put(CONF+"line_radius", line_radius);
+			
+			builder.addSlider("Step", CONF+"step", 2, 14, 1);
+			builder.addSlider("Polygon count", CONF+"polygon_count", 4, 60, 1);
+			builder.addSlider("Line radius", CONF+"line_radius", .01, 1.5, .01);
+
+			initForConfig(config);
+		},
+		change: initForConfig
+	});
+}();
 
 Network.addClientPacket("aw.singularity_lines_update", function(lines){
 	for(let key in lines)
@@ -4495,7 +4715,9 @@ let NetworkSingularity = {
 	
 	send(){
 		let list = NetworkSingularity.lines;
+		NetworkSingularity.lines = {};
 		let players = Network.getConnectedPlayers();
+		
 		for(let key in list){
 			let lines = list[key];
 			let dimension = Number(key);
@@ -4521,7 +4743,6 @@ let NetworkSingularity = {
 				client && client.send("aw.singularity_lines_update", send);
 			}
 		}
-		this.lines = {};
 	}
 };
 
@@ -4532,13 +4753,66 @@ Callback.addCallback("LevelLeft", function(){
 });
 
 const base_transfer = function(output, tile){
-//	let angle = Entity.get
-	//if(World.getThreadTime() % 20 == 0)
-		//ParticlesAPI.spawnLine(ParticlesAPI.part2, tile.x, tile.y, tile.z, output.x, output.y, output.z, 15, tile.dimension);
+	if(World.getThreadTime() % 20 == 0)
+		ParticlesAPI.spawnLine(ParticlesAPI.part2, tile.x, tile.y, tile.z, output.x, output.y, output.z, 15, tile.dimension);
 }
 let SingularityAPI = {
 	input: {},
 	output: {},
+	
+	registerTile(id, tile){
+		let init = tile.init || function(){};
+		let tick = tile.tick || function(){};
+		let click = tile.click || function(){};
+		
+		tile.defaultValues = tile.defaultValues || {};
+		tile.defaultValues.aspect = tile.defaultValues.aspect || 0;
+		tile.defaultValues.aspectMax = tile.defaultValues.aspectMax || 50;
+		
+		function extended(obj, add){
+			for(let key in add){
+				let value = add[key];
+				let value_org = obj[key];
+			
+				if(!value_org){
+					obj[key] = value
+					continue;
+				}
+			
+				if(typeof value_org == "function")
+					obj[key] = function(){
+						value.apply(this, arguments);
+						value_org.apply(this, arguments);
+					}
+				else if(!Array.isArray(value_org))
+					extended(value_org, value);
+			}
+		}
+		
+		let client = tile.client || {};
+		extended(client, new SingularityLines.Client());
+		tile.client = client;
+		
+		tile.init = function(){
+			SingularityAPI.init(this);
+			init.apply(this, arguments);
+		}
+		
+		let transfee_max = tile.transfee_max || 2;
+		tile.tick = function(){
+			SingularityAPI.transfers(this, transfee_max, base_transfer);
+			tick.apply(this, arguments);
+		}
+		
+		tile.click = function(id, count, data, coords, player){
+			SingularityAPI.click(this, coords, player);
+			click.apply(this, arguments);
+		}
+		
+		tile.isOutput && this.setBlockOutputName(id, tile.output_name || "base", true);
+		tile.isInput && this.setBlockInputName(id, tile.input_name || "base", true);
+		TileEntity.registerPrototype(id, tile);
+	},
 	
 	setBlockInputName: function(id, name, bool){
 		this.input[name] = this.input[name] || {};
@@ -4917,6 +5191,316 @@ let ProjectTileFireBoom = new ProjectTile.create("fire_boom")
 		anim.cancel();
 	}
 });*/
+
+
+
+
+// file: core/Lightbolt.js
+
+function buildLightboltMeshForRadius(rad, setting){
+	const mesh = new RenderMesh();
+	with(setting){
+		const step = rad * (1 / count_kink);
+		
+		let x = 0, y = 0, x_post = 0, y_post = 0;
+		const z_min_modi = branching_z_modification[0], z_max_modi = branching_z_modification[1];
+		
+		for(let z = 0, z_post = step;z <= rad;z += step, z_post += step){
+			y_post = Math.random() / kink_strength - Math.random() / kink_strength;
+			x_post = Math.random() / kink_strength - Math.random() / kink_strength;
+			
+			mesh.addVertex(x, y, z);
+			mesh.addVertex(x+size, y, z);
+			mesh.addVertex(x_post+size, y_post, z_post);
+		
+			mesh.addVertex(x, y, z);
+			mesh.addVertex(x_post+size, y_post, z_post);
+			mesh.addVertex(x_post, y_post, z_post);
+			
+			if(Math.random() <= chance_branching){
+				let z_modi = z + step * (Math.random() * (z_max_modi - z_min_modi)) + z_min_modi;
+				let kink_x = Math.random() / kink_strength - Math.random() / kink_strength;
+				let kink_y = Math.random() / kink_strength - Math.random() / kink_strength;
+				
+				mesh.addVertex(x, y, z);
+				mesh.addVertex(x+size, y, z);
+				mesh.addVertex(kink_x+size, kink_y, z_modi);
+		
+				mesh.addVertex(x, y, z);
+				mesh.addVertex(kink_x+size, kink_y, z_modi);
+				mesh.addVertex(kink_x, kink_y, z_modi);
+			}
+			
+			x = x_post;
+			y = y_post;
+		}
+	}
+	
+	return mesh;
+}
+
+function buildLightboltMesh(x1, y1, z1, x2, y2, z2, setting){
+	const mesh = new RenderMesh();
+	
+	const dx = x2-x1;
+	const dy = y2-y1;
+	const dz = z2-z1;
+	
+	const radius = Math.sqrt(dx * dx + dy * dy + dz * dz);
+	
+	buildLightboltMeshForRadius(radius, setting);
+	
+	rotateMesh(mesh, x1, x2, y1, y2, dx, dy, dz, radius);
+	mesh.translate(x1, y1, z1);
+		
+	return mesh;
+}
+
+let Lightbolt = {
+	types: {},
+	
+	anim_cache: {},
+	
+	updateNode(node){
+		const mesh = new RenderMesh();
+		let newList = [];
+		
+		for(let i in node.lightbolts){
+			let lightbolt = node.lightbolts[i];
+			if(lightbolt.visibility){
+				let lightbolt = node.lightbolts[i];
+				mesh.addMesh(lightbolt.mesh);
+				newList.push(lightbolt);
+			}
+		}
+		
+		if(newList.length == 0)
+			delete this.anim_cache[node.id];
+		
+		node.lightbolts = newList;
+		
+		node.anim.describe({
+			mesh: mesh
+		});
+		node.anim.load();
+	},
+	
+	spawnClient(name, x1, y1, z1, x2, y2, z2){
+		const type = this.types[name]
+		const setting = type.setting;
+		const mesh_ = type.getLightboltMesh(x1, y1, z1, x2, y2, z2);
+		
+		const dx = x2-x1;
+		const dy = y2-y1;
+		const dz = z2-z1;
+	
+		const radius = Math.sqrt(dx * dx + dy * dy + dz * dz);
+		
+		const mesh = new RenderMesh();
+		mesh.addMesh(mesh_);
+	
+		rotateMesh(mesh, x1, x2, y1, y2, dx, dy, dz, radius);
+		mesh.translate(x1, y1, z1);
+		
+		switch(setting.animation_cache_type){
+			case 0:
+				let anim = new Animation.Base(0, 0, 0);
+				anim.describe({
+					mesh: mesh
+				});
+				anim.load();
+				setTimeoutLocal(function(){
+					anim.destroy();
+				}, setting.life_time);
+			break;
+			case 1:
+				let id = x1+":"+y1+":"+z1;
+				let node = this.anim_cache[id];
+				if(!node){
+					node = {
+						id: id,
+						anim: new Animation.Base(0, 0, 0),
+						lightbolts: []
+					};
+					this.anim_cache[id] = node;
+				}
+				node.lightbolts.push({
+					name: name,
+					life_time: setting.life_time,
+					mesh: mesh,
+					x1: x1,
+					y1: y1,
+					z1: z1,
+					x2: x2,
+					y2: y2,
+					z2: z2,
+					visibility: true
+				});
+				node.update = true;
+			break;
+		}
+	},
+	
+	registerType(name, type){
+		this.types[name] = type;
+	}
+};
+
+ThreadHelp.registerForGame("client-liqhtbolt-timer", function(){
+	for(let key in Lightbolt.anim_cache){
+		let node = Lightbolt.anim_cache[key];
+		
+		for(let i in node.lightbolts){
+			let lightbolt = node.lightbolts[i];
+			lightbolt.life_time-=5;
+			
+			if(lightbolt.life_time < 0){
+				lightbolt.visibility = false;
+				node.update = true;
+			}
+		}
+		
+		node.update && Lightbolt.updateNode(node);
+	}
+
+}, 5 / 20 * 1000);
+
+Network.addClientPacket("aw.lightbolt_update", function(lightbolts){
+	for(let i in lightbolts)
+		with(lightbolts[i]){
+			Lightbolt.spawnClient(type, x1, y1, z1, x2, y2, z2);
+		}
+});
+let NetworkLightbolt = {
+	lightbolts: {},
+	
+	spawn(region, type, x1, y1, z1, x2, y2, z2){
+		this.lightbolts[type+":"+x1+":"+y1+":"+z1+":"+x2+":"+y2+":"+z2] = {
+			players: getVisibalePlayers(region, x1, y1, z1, RADIUS_VISIBILITY),
+			type: type,
+			x1: x1,
+			y1: y1,
+			z1: z1,
+			x2: x2,
+			y2: y2,
+			z2: z2
+		};
+	},
+	
+	send(){
+		let list = NetworkLightbolt.lightbolts;
+		NetworkLightbolt.lightbolts = {};
+		let send_players = {}
+		
+		for(let key in list){
+			let lightbolt = list[key];
+			
+			for(let i in lightbolt.players){
+				let player = lightbolt.players[i];
+				
+				send_players[player] = send_players[player] || [];
+				
+				send_players[player].push(lightbolt);
+			}
+			
+			lightbolt.players = [];
+		}
+		
+		for(let key in send_players){
+			let client = Network.getClientForPlayer(Number(key));
+			client && client.send("aw.lightbolt_update", send_players[key]);
+		}
+	}
+};
+
+ThreadHelp.registerForGame("server-liqhtbolt", NetworkLightbolt.send, 500);
+
+Callback.addCallback("LevelLeft", function(){
+	NetworkLightbolt.lines = {};
+});
+
+function LightboltType(name, setting){
+	setting.animation_cache_type = setting.animation_cache_type || 0;
+	setting.cache_count = setting.cache_count || 15;
+	let mesh_cache = [];
+	const rand = new Random();
+	
+	this.name = name;
+	this.setting = setting;
+	
+	this.rebuildCache = function(){
+		mesh_cache = [];
+		if(!setting.radius || setting.radius <= 0) return;
+		
+		for(let i = 0;i < setting.cache_count;i++)
+			mesh_cache.push(buildLightboltMeshForRadius(setting.radius, setting));
+	}
+	
+	this.rebuildCache();
+	
+	this.getLightboltMesh = function(x1, y1, z1, x2, y2, z2){
+		if(setting.radius)
+			return mesh_cache[rand.nextInt(mesh_cache.length)];
+		
+		const dx = x2-x1;
+		const dy = y2-y1;
+		const dz = z2-z1;
+	
+		const radius = Math.sqrt(dx * dx + dy * dy + dz * dz);
+		
+		return buildLightboltMeshForRadius(radius, setting);
+	}
+	
+	this.spawnClient = function(pos1, pos2){
+		this.spawnFullClient(pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z);
+	}
+	
+	this.spawnServer = function(region, pos1, pos2){
+		this.spawnFullServer(region, pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z);
+	}
+	
+	this.spawnFullClient = function(x1, y1, z1, x2, y2, z2){
+		Lightbolt.spawnClient(name, x1, y1, z1, x2, y2, z2);
+	}
+	
+	this.spawnFullServer = function(region, x1, y1, z1, x2, y2, z2){
+		NetworkLightbolt.spawn(region, name, x1, y1, z1, x2, y2, z2);
+	};
+	
+	this.spawn = this.spawnFullServer;
+	
+	Lightbolt.registerType(name, this);
+}
+
+/*
+
+Пример
+
+let test = new LightboltType("test", {
+	//отрисовка
+	animation_cache_type: 1,
+	life_time: 70,
+	size: 1/16,
+	
+	//изломы
+	count_kink: 10,
+	kink_strength: 4,
+	chance_branching: .4,
+	branching_z_modification: [.5, 1.1],
+	
+	//хеширование меша
+	cache_count: 15,
+	radius: 5//если указано, то длина молнии постоянно одинаковая, но модель хешируется, благодаря чему отрисовка начинается быстрее
+});
+
+Callback.addCallback("ItemUse", function(pos, item, block, is, player){
+	centerBlockPos(pos);
+	test.spawnServer(
+		BlockSource.getDefaultForActor(player),
+		pos, randPos(pos, 5)
+	);
+});
+*/
 
 
 
@@ -5372,8 +5956,8 @@ Item.createItem("aw_magic_staff", "aw.item.magic_staff", {name: "magic_staff", m
 
 IDRegistry.genItemID("aw_dead"); 
 Item.createItem("aw_dead", "aw.item.death", {name: "aw_dead", meta: 0}, {stack: 1});
-ItemModule.setFireResistant(ItemID.aw_dead, true);
-ItemModule.setExplodable(ItemID.aw_dead, true);
+Item.setFireResistant(ItemID.aw_dead, true);
+Item.setExplodable(ItemID.aw_dead, true);
 
 ToolAPI.addToolMaterial("godDead", {
     durability: 3000,
@@ -6099,13 +6683,22 @@ decor.addType("itemUse", function(packet){
 
 decor = Wands.registerSrollDecoration(ItemID.decor6);
 decor.addType("usingReleased", function(packet){
-	playAnimation(packet.player, "animation.aw.decor.one", 3)
+	playAnimation(
+		BlockSource.getDefaultForActor(packet.entity), 
+		90, packet.player, "animation.aw.decor.one", 60
+	);
 });
 decor.addType("EntityInteract", function(packet){
-	playAnimation(packet.player, "animation.aw.decor.one", 3)
+	playAnimation(
+		BlockSource.getDefaultForActor(packet.entity), 
+		90, packet.player, "animation.aw.decor.one", 60
+	);
 });
 decor.addType("itemUse", function(packet){
-	playAnimation(packet.player, "animation.aw.decor.one", 3)
+	playAnimation(
+		BlockSource.getDefaultForActor(packet.entity), 
+		90, packet.player, "animation.aw.decor.one", 60
+	);
 });
 
 decor = Wands.registerSrollDecoration(ItemID.decor7);
@@ -6757,6 +7350,10 @@ Wands.setPrototype(ItemID.sroll15, {
     setFunction: function(packet){
         let pos = Entity.getPosition(packet.entity);
         let vel = Entity.getLookVectorByAngle(Entity.getLookAngle(packet.entity));
+        playAnimation(
+					BlockSource.getDefaultForActor(packet.entity), 
+					90, packet.player, "animation.player.glide", 60
+				);
         startSpinAttack(packet.entity);
         Entity.addVelocity(packet.entity, vel.x * 2, vel.y * 2, vel.z * 2);
         ParticlesAPI.spawnLine(ParticlesAPI.part2, pos.x, pos.y, pos.z, pos.x + (vel.x * 6), pos.y + (vel.y * 6), pos.z + (vel.z * 6), 10, Entity.getDimension(packet.entity));
@@ -8651,7 +9248,7 @@ ToolAPI.registerBlockMaterial(BlockID.aw_magic_stone, "stone", 1);
 IDRegistry.genBlockID("aw_magic_brick");
 Block.createBlock("aw_magic_brick", [ {name: "aw.block.aw_magic_brick", texture: [["aw_magic_brick", 0]], inCreative: true}], BLOCK_TYPE_STONE);
 
-ToolAPI.registerBlockMaterial(BlockID.aw_magic_brick, "stone", 1);
+ToolAPI.registerBlockMaterial(BlockID.aw_magic_brick, "stone", 1); 
 
 
 
@@ -9235,7 +9832,7 @@ function getParticleType(descriptor){
 }
 
 Network.addClientPacket("aw.spawnCauldron", function(data){
-	if(Entity.getDimension(Player.get()) != data.dimension)
+	if(Player.getDimension() != data.dimension)
 		return;
 	Particles.addParticle(getParticleType(data), data.x+Math.random(), data.y+1, data.z+Math.random(), 0, Math.random()/10, 0);
 });
@@ -9741,25 +10338,73 @@ TileEntity.registerPrototype(BlockID.singularity_extract, {
 IDRegistry.genBlockID("transmitter");
 Block.createBlock("transmitter", [ {name: "aw.block.transmitter", texture: [["stone", 0]], inCreative: true} ]);
 
-SingularityAPI.setBlockInputName(BlockID.transmitter, "base", true);
-SingularityAPI.setBlockOutputName(BlockID.transmitter, "base", true);
-RenderAPI.setTransmitter(BlockID.transmitter);
-TileEntity.registerPrototype(BlockID.transmitter, {
-	defaultValues: {
-		aspect: 0,
-		aspectMax: 50,
-		arr: null
+let lightbolt_transmitter = new LightboltType("lightbolt_transmitter", {
+	animation_cache_type: 1,
+	life_time: 45,
+	size: 1/20,
+	count_kink: 8,
+	kink_strength: 4,
+	chance_branching: .4,
+	branching_z_modification: [.5, 1.1],
+	cache_count: 15,
+	radius: 1
+});
+
+let LIGUIDBOLT_TRANSMITTER = true;
+
+void function(){
+	let setting = lightbolt_transmitter.setting;
+	
+	function initForConfig(config){
+		LIGUIDBOLT_TRANSMITTER = config.get("enabled_liguidbolt");
+		setting.life_time = config.get("life_time");
+		setting.radius = config.get("radius");
+		setting.count_kink = config.get("count_kink");
+		setting.cache_count = config.get("cache_count");
+		
+		lightbolt_transmitter.rebuildCache();
+	}
+
+	GraphicsSetting.register("Liguidbolt transmitter", {
+		init(config, builder){
+			config.put("enabled_liguidbolt", true);
+			config.put("life_time", setting.life_time);
+			config.put("radius", setting.radius);
+			config.put("cache_count", setting.cache_count);
+			config.put("count_kink", setting.count_kink);
+			
+			builder.addCheckBox("Enabled", "enabled_liguidbolt");
+			builder.addSlider("Life time", "life_time", 5, 70, 5);
+			builder.addSlider("Count kink", "count_kink", 1, 12, 1);
+			builder.addSlider("Radius", "radius", 0, 1.5, .1);
+			builder.addSlider("Cache count", "cache_count", 1, 50, 1);
+			
+			initForConfig(config);
+		},
+		change: initForConfig
+	});
+}();
+
+let energy_transmission = loadForBlockbenchProject(PATH_BBMODEL+"energy_transmission.bbmodel")
+	.setBlockModel(BlockID.transmitter);
+SingularityAPI.registerTile(BlockID.transmitter, {
+	isOutput: true,
+	isInput: true,
+	
+	client: {
+		tick(){
+			if(LIGUIDBOLT_TRANSMITTER && this.networkData.getInt("aspects") > 0 && World.getThreadTime() % 10 == 0){
+				let pos = centerBlockPos(this);
+				lightbolt_transmitter.spawnClient(pos, randPos(pos, 1));
+			}
+		}
 	},
 	
-	client: new SingularityLines.Client(),
-	init(){
-		SingularityAPI.init(this);
-	},
 	tick(){
-		SingularityAPI.transfers(this, 2, base_transfer);
-	},
-	click(id, count, data, coords, player){
-		SingularityAPI.click(this, coords, player);
+		if(LIGUIDBOLT_TRANSMITTER && World.getThreadTime() % 20 == 0){
+			this.networkData.putInt("aspects", this.data.aspect);
+			this.networkData.sendChanges();
+		}
 	}
 });
 
@@ -10436,7 +11081,7 @@ function getArmorBook(slot, title, text, items){
 	for(let i in items){
 		let id = items[i];
 		arr.push({type: "slot", slots: [{size: slot,item:{id:id}}]});
-		arr.push({text: TranslationLoad.get("aw.guide.armor.value", [["value", ItemModule.getArmorValue(id)]]), size: text});
+		arr.push({text: TranslationLoad.get("aw.guide.armor.value", [["value", Item.getArmorValue(id)]]), size: text});
 		arr.push({text: TranslationLoad.get("aw.guide.armor.damage", [["value", Item.getMaxDamage(id)]]), size: text});
 		let obj = MagicCore.armors[id]
 		if(obj)
@@ -12511,17 +13156,16 @@ ItemGenerate.setItemIntegration(ItemID.magic_crystal, .1, {max: 1});
 
 // file: ritual/spawn.js
 
-if(!Game.isDedicatedServer()){
-	Callback.addCallback("ItemUse", function(coords, item, block, isExternal, player) {
-		if(item.id == ItemID.bookk){
-			let region = BlockSource.getDefaultForActor(player)
-			if(Structure.isStructure("aw_ritual_0", coords.x, coords.y, coords.z, region)){
-				Structure.destroy("aw_ritual_0", coords.x, coords.y, coords.z, region);
-				region.spawnEntity(coords.x,coords.y, coords.z, "aw:boss0");
-			}
+
+Callback.addCallback("ItemUse", function(coords, item, block, isExternal, player) {
+	if(item.id == ItemID.bookk){
+		let region = BlockSource.getDefaultForActor(player)
+		if(Structure.isStructure("aw_ritual_0", coords.x, coords.y, coords.z, region)){
+			Structure.destroy("aw_ritual_0", coords.x, coords.y, coords.z, region);
+			region.spawnEntity(coords.x,coords.y, coords.z, "aw:boss0");
 		}
-	});
-}
+	}
+});
 
 
 
@@ -12777,10 +13421,11 @@ function CommandRegistry(name){
 CommandRegistry.commands = {};
 
 CommandRegistry.create = function(cmd){
-	if(!Game.isDedicatedServer())
-		Network.addServerPacket("command."+cmd.name, function(client, data){
+	Network.addServerPacket("command."+cmd.name, function(client, data){
+		if(new PlayerActor(client.getPlayerUid())
+			.isOperator())
 			cmd.runServer(client, data.args);
-		});
+	});
 	
 	CommandRegistry.commands["/"+cmd.name] = cmd;
 }
@@ -14172,7 +14817,6 @@ const API = {
     TranslationLoad: TranslationLoad,
     SingularityAPI: SingularityAPI,
     EntityReg: EntityReg,
-    ItemName: ItemName,
     
     Scrutiny: Scrutiny,
     Wand: Wand,

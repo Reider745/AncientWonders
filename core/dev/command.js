@@ -197,10 +197,11 @@ function CommandRegistry(name){
 CommandRegistry.commands = {};
 
 CommandRegistry.create = function(cmd){
-	if(!Game.isDedicatedServer())
-		Network.addServerPacket("command."+cmd.name, function(client, data){
+	Network.addServerPacket("command."+cmd.name, function(client, data){
+		if(new PlayerActor(client.getPlayerUid())
+			.isOperator())
 			cmd.runServer(client, data.args);
-		});
+	});
 	
 	CommandRegistry.commands["/"+cmd.name] = cmd;
 }

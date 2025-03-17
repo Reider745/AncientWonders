@@ -22,7 +22,6 @@ const API = {
     TranslationLoad: TranslationLoad,
     SingularityAPI: SingularityAPI,
     EntityReg: EntityReg,
-    ItemName: ItemName,
     
     Scrutiny: Scrutiny,
     Wand: Wand,

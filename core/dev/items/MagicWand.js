@@ -489,6 +489,10 @@ Wands.setPrototype(ItemID.sroll15, {
     setFunction: function(packet){
         let pos = Entity.getPosition(packet.entity);
         let vel = Entity.getLookVectorByAngle(Entity.getLookAngle(packet.entity));
+        playAnimation(
+					BlockSource.getDefaultForActor(packet.entity), 
+					90, packet.player, "animation.player.glide", 60
+				);
         startSpinAttack(packet.entity);
         Entity.addVelocity(packet.entity, vel.x * 2, vel.y * 2, vel.z * 2);
         ParticlesAPI.spawnLine(ParticlesAPI.part2, pos.x, pos.y, pos.z, pos.x + (vel.x * 6), pos.y + (vel.y * 6), pos.z + (vel.z * 6), 10, Entity.getDimension(packet.entity));

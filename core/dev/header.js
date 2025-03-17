@@ -12,18 +12,6 @@ const Color = android.graphics.Color;
 const RADIUS_VISIBILITY = 35;
 const PATH_BBMODEL = __dir__+"assets/terrain-atlas/bbmodel/"
 
-//Данный метод в хорике всегда возвращает false, на сервере true
-/*
-Вырезанный контент на сервере
-
-команды
-мобы, боссы
-не сгораемый и не взрываемая коса
-*/
-Game.isDedicatedServer = Game.isDedicatedServer || function(){
-	return false;
-};
-
 //надо переписаить, но не хочу(
 function getProtPedestal(size){
 	return {
@@ -188,33 +176,21 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 
-
-
-function playAnimation(player, anim, time){
-	Commands.exec('/playanimation "'+Entity.getNameTag(player)+'" '+anim+' null '+time)
-}
-
-var PlayerModule = WRAP_NATIVE("PlayerModule");
-if(!Game.isDedicatedServer())
-	var ItemModule = WRAP_NATIVE("ItemModule");
-else
-	var ItemModule = {
-		setFireResistant(id, value){},
-		setExplodable(id, value){},
-		getArmorValue(id){
-			return 0;
-		}
-	};
-
-Network.addClientPacket("Player.animation.aw", function(name){
-    PlayerModule.startSpinAttack();
+Network.addClientPacket("player.animation.aw", function(data){
+	Entity.playAnimation(data.player, data.name, data.time);
 });
 
-function startSpinAttack(player){
-    let client = Network.getClientForPlayer(player);
-    if(client != null){
-        client.send("Player.animation.aw", {});
-    }
+function playAnimation(region, radius, player, anim, time){
+	let pos = Entity.getPosition(player);
+	let players = getVisibalePlayers(region, pos.x, pos.y, pos.z, radius);
+	for(let i in players){
+		let client = Network.getClientForPlayer(players[i]);
+		client && client.send("player.animation.aw", {
+			player: player,
+			name: anim,
+			time: time
+		});
+	}
 }
 
 ScrutinyAPI.save = __config__.getBool("debug.saveScrutiny");

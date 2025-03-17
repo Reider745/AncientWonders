@@ -169,13 +169,22 @@ decor.addType("itemUse", function(packet){
 
 decor = Wands.registerSrollDecoration(ItemID.decor6);
 decor.addType("usingReleased", function(packet){
-	playAnimation(packet.player, "animation.aw.decor.one", 3)
+	playAnimation(
+		BlockSource.getDefaultForActor(packet.entity), 
+		90, packet.player, "animation.aw.decor.one", 60
+	);
 });
 decor.addType("EntityInteract", function(packet){
-	playAnimation(packet.player, "animation.aw.decor.one", 3)
+	playAnimation(
+		BlockSource.getDefaultForActor(packet.entity), 
+		90, packet.player, "animation.aw.decor.one", 60
+	);
 });
 decor.addType("itemUse", function(packet){
-	playAnimation(packet.player, "animation.aw.decor.one", 3)
+	playAnimation(
+		BlockSource.getDefaultForActor(packet.entity), 
+		90, packet.player, "animation.aw.decor.one", 60
+	);
 });
 
 decor = Wands.registerSrollDecoration(ItemID.decor7);
